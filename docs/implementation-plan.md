@@ -11,7 +11,7 @@ This document tracks the step-by-step implementation of growth.md MVP. Each phas
 
 **Progress Overview**:
 - Phase 1: Project Foundation - [x] 9/10 (90%)
-- Phase 2: Core Domain Models - [ ] 0/8
+- Phase 2: Core Domain Models - [x] 8/8 (100%)
 - Phase 3: Storage Layer - [ ] 0/7
 - Phase 4: CLI Framework - [ ] 0/6
 - Phase 5: Entity Commands - [ ] 0/15
@@ -19,7 +19,7 @@ This document tracks the step-by-step implementation of growth.md MVP. Each phas
 - Phase 7: AI Integration - [ ] 0/5
 - Phase 8: Polish & Testing - [ ] 0/6
 
-**Total Progress**: 9/61 tasks complete (15%)
+**Total Progress**: 17/61 tasks complete (28%)
 
 ---
 
@@ -189,10 +189,10 @@ install:
 ---
 
 ### 1.10 Initial Git Commit
-- [ ] Initialize git repo: `git init`
-- [ ] Add all files: `git add .`
-- [ ] Commit: `git commit -m "Initial project structure"`
-- [ ] Tag: `git tag v0.1.0-alpha`
+- [x] Initialize git repo: `git init`
+- [x] Add all files: `git add .`
+- [x] Commit: `git commit -m "Initial project structure"`
+- [x] Tag: `git tag v0.1.0-alpha`
 
 **Verification**: Clean git status, tagged commit
 
@@ -203,8 +203,8 @@ install:
 **Goal**: Define Go structs for all entities with proper validation
 
 ### 2.1 Create Base Entity Types
-- [ ] Create `internal/core/types.go`
-- [ ] Define common types:
+- [x] Create `internal/core/types.go`
+- [x] Define common types:
   - `EntityID` (string type alias)
   - `Status` (enum: active, completed, archived)
   - `Priority` (enum: high, medium, low)
@@ -253,11 +253,11 @@ const (
 ---
 
 ### 2.2 Create Skill Entity
-- [ ] Create `internal/core/skill.go`
-- [ ] Define `Skill` struct with all fields from whitepaper
-- [ ] Add validation method: `Validate() error`
-- [ ] Add `NewSkill()` constructor
-- [ ] Write tests in `internal/core/skill_test.go`
+- [x] Create `internal/core/skill.go`
+- [x] Define `Skill` struct with all fields from whitepaper
+- [x] Add validation method: `Validate() error`
+- [x] Add `NewSkill()` constructor
+- [x] Write tests in `internal/core/skill_test.go`
 
 **Files to create**:
 - `internal/core/skill.go`
@@ -281,11 +281,11 @@ type Skill struct {
 ---
 
 ### 2.3 Create Goal Entity
-- [ ] Create `internal/core/goal.go`
-- [ ] Define `Goal` struct with all fields
-- [ ] Add validation method
-- [ ] Add `NewGoal()` constructor
-- [ ] Write tests
+- [x] Create `internal/core/goal.go`
+- [x] Define `Goal` struct with all fields
+- [x] Add validation method
+- [x] Add `NewGoal()` constructor
+- [x] Write tests
 
 **Files to create**:
 - `internal/core/goal.go`
@@ -310,11 +310,11 @@ type Goal struct {
 ---
 
 ### 2.4 Create Learning Path Entity
-- [ ] Create `internal/core/path.go`
-- [ ] Define `LearningPath` struct
-- [ ] Add `PathType` enum (ai-generated, manual)
-- [ ] Add validation and constructor
-- [ ] Write tests
+- [x] Create `internal/core/path.go`
+- [x] Define `LearningPath` struct
+- [x] Add `PathType` enum (ai-generated, manual)
+- [x] Add validation and constructor
+- [x] Write tests
 
 **Files to create**:
 - `internal/core/path.go`
@@ -323,11 +323,11 @@ type Goal struct {
 ---
 
 ### 2.5 Create Phase Entity
-- [ ] Create `internal/core/phase.go`
-- [ ] Define `Phase` struct
-- [ ] Define `SkillRequirement` struct (skill ID + target level)
-- [ ] Add validation and constructor
-- [ ] Write tests
+- [x] Create `internal/core/phase.go`
+- [x] Define `Phase` struct
+- [x] Define `SkillRequirement` struct (skill ID + target level)
+- [x] Add validation and constructor
+- [x] Write tests
 
 **Files to create**:
 - `internal/core/phase.go`
@@ -354,12 +354,12 @@ type Phase struct {
 ---
 
 ### 2.6 Create Resource Entity
-- [ ] Create `internal/core/resource.go`
-- [ ] Define `Resource` struct
-- [ ] Add `ResourceType` enum (book, course, video, article, project, documentation)
-- [ ] Add `ResourceStatus` enum (not-started, in-progress, completed)
-- [ ] Add validation and constructor
-- [ ] Write tests
+- [x] Create `internal/core/resource.go`
+- [x] Define `Resource` struct
+- [x] Add `ResourceType` enum (book, course, video, article, project, documentation)
+- [x] Add `ResourceStatus` enum (not-started, in-progress, completed)
+- [x] Add validation and constructor
+- [x] Write tests
 
 **Files to create**:
 - `internal/core/resource.go`
@@ -368,12 +368,12 @@ type Phase struct {
 ---
 
 ### 2.7 Create Milestone Entity
-- [ ] Create `internal/core/milestone.go`
-- [ ] Define `Milestone` struct
-- [ ] Add `MilestoneType` enum (goal-level, path-level, skill-level)
-- [ ] Add `ReferenceType` enum (goal, path, skill)
-- [ ] Add validation and constructor
-- [ ] Write tests
+- [x] Create `internal/core/milestone.go`
+- [x] Define `Milestone` struct
+- [x] Add `MilestoneType` enum (goal-level, path-level, skill-level)
+- [x] Add `ReferenceType` enum (goal, path, skill)
+- [x] Add validation and constructor
+- [x] Write tests
 
 **Files to create**:
 - `internal/core/milestone.go`
@@ -382,11 +382,11 @@ type Phase struct {
 ---
 
 ### 2.8 Create Progress Log Entity
-- [ ] Create `internal/core/progress.go`
-- [ ] Define `ProgressLog` struct
-- [ ] Add helper for getting week-of date
-- [ ] Add validation and constructor
-- [ ] Write tests
+- [x] Create `internal/core/progress.go`
+- [x] Define `ProgressLog` struct
+- [x] Add helper for getting week-of date
+- [x] Add validation and constructor
+- [x] Write tests
 
 **Files to create**:
 - `internal/core/progress.go`
