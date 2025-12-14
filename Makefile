@@ -22,7 +22,13 @@ test-coverage:
 # Run linter
 lint:
 	@echo "Running linter..."
-	@golangci-lint run
+	@if command -v golangci-lint >/dev/null 2>&1; then \
+		golangci-lint run; \
+	else \
+		echo "golangci-lint is not installed."; \
+		echo "Install it with: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin"; \
+		exit 1; \
+	fi
 
 # Clean build artifacts
 clean:

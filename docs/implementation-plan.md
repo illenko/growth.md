@@ -10,7 +10,7 @@
 This document tracks the step-by-step implementation of growth.md MVP. Each phase builds on the previous one, and tasks are marked as complete when code is written, tested, and committed.
 
 **Progress Overview**:
-- Phase 1: Project Foundation - [x] 6/10 (60%)
+- Phase 1: Project Foundation - [x] 9/10 (90%)
 - Phase 2: Core Domain Models - [ ] 0/8
 - Phase 3: Storage Layer - [ ] 0/7
 - Phase 4: CLI Framework - [ ] 0/6
@@ -19,7 +19,7 @@ This document tracks the step-by-step implementation of growth.md MVP. Each phas
 - Phase 7: AI Integration - [ ] 0/5
 - Phase 8: Polish & Testing - [ ] 0/6
 
-**Total Progress**: 6/61 tasks complete (10%)
+**Total Progress**: 9/61 tasks complete (15%)
 
 ---
 
@@ -158,9 +158,9 @@ install:
 ---
 
 ### 1.7 Set Up Testing Structure
-- [ ] Create `tests/fixtures/` directory for test data
-- [ ] Create example test: `internal/core/skill_test.go`
-- [ ] Verify: `make test` passes
+- [x] Create `tests/fixtures/` directory for test data
+- [x] Create example test: `internal/core/skill_test.go`
+- [x] Verify: `make test` passes
 
 **Files to create**:
 - `tests/fixtures/.gitkeep`
@@ -169,9 +169,9 @@ install:
 ---
 
 ### 1.8 Configure golangci-lint
-- [ ] Create `.golangci.yml` configuration
-- [ ] Enable key linters: govet, errcheck, staticcheck, unused
-- [ ] Run: `make lint` (should pass on empty project)
+- [x] Create `.golangci.yml` configuration
+- [x] Enable key linters: govet, errcheck, staticcheck, unused
+- [x] Run: `make lint` (shows installation instructions if not installed)
 
 **Files to create**:
 - `.golangci.yml`
@@ -179,9 +179,9 @@ install:
 ---
 
 ### 1.9 Set Up GitHub Actions (Optional but Recommended)
-- [ ] Create `.github/workflows/test.yml` for CI
-- [ ] Run tests on push to main
-- [ ] Run linter
+- [x] Create `.github/workflows/test.yml` for CI
+- [x] Run tests on push to main
+- [x] Run linter
 
 **Files to create**:
 - `.github/workflows/test.yml`

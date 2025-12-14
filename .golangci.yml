@@ -1,0 +1,16 @@
+version: 2
+
+run:
+  timeout: 5m
+
+linters:
+  enable:
+    - govet        # Vet examines Go source code and reports suspicious constructs
+    - errcheck     # Checks for unchecked errors
+    - staticcheck  # Static analysis
+    - unused       # Checks for unused constants, variables, functions and types
+    - ineffassign  # Detects ineffectual assignments
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
