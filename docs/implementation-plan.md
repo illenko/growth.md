@@ -1,0 +1,1176 @@
+# growth.md Implementation Plan
+
+**Status**: In Progress
+**Target MVP Completion**: 6 weeks from start
+
+---
+
+## Overview
+
+This document tracks the step-by-step implementation of growth.md MVP. Each phase builds on the previous one, and tasks are marked as complete when code is written, tested, and committed.
+
+**Progress Overview**:
+- Phase 1: Project Foundation - [ ] 0/10
+- Phase 2: Core Domain Models - [ ] 0/8
+- Phase 3: Storage Layer - [ ] 0/7
+- Phase 4: CLI Framework - [ ] 0/6
+- Phase 5: Entity Commands - [ ] 0/15
+- Phase 6: Git Integration - [ ] 0/4
+- Phase 7: AI Integration - [ ] 0/5
+- Phase 8: Polish & Testing - [ ] 0/6
+
+**Total Progress**: 0/61 tasks complete (0%)
+
+---
+
+## Phase 1: Project Foundation
+
+**Goal**: Set up Go project structure, dependencies, and basic tooling
+
+### 1.1 Initialize Go Module
+- [ ] Run `go mod init github.com/yourusername/growth.md`
+- [ ] Create basic directory structure:
+  ```
+  growth.md/
+  ├── cmd/growth/
+  ├── internal/
+  │   ├── cli/
+  │   ├── core/
+  │   ├── storage/
+  │   ├── ai/
+  │   └── git/
+  ├── pkg/
+  ├── docs/
+  ├── examples/
+  └── tests/
+  ```
+- [ ] Add `.gitignore` for Go (binaries, IDE files, test coverage)
+
+**Files to create**:
+- `go.mod`
+- `.gitignore`
+- Directory structure
+
+---
+
+### 1.2 Add Core Dependencies
+- [ ] Install Cobra: `go get -u github.com/spf13/cobra@latest`
+- [ ] Install Viper: `go get -u github.com/spf13/viper`
+- [ ] Install YAML parser: `go get gopkg.in/yaml.v3`
+- [ ] Install goldmark (Markdown): `go get github.com/yuin/goldmark`
+- [ ] Install testify: `go get github.com/stretchr/testify`
+
+**Verification**: `go mod tidy` runs successfully
+
+---
+
+### 1.3 Create Main Entry Point
+- [ ] Create `cmd/growth/main.go` with basic Cobra root command
+- [ ] Add version flag
+- [ ] Add basic `--help` output
+- [ ] Test: `go run cmd/growth/main.go --version`
+
+**Files to create**:
+- `cmd/growth/main.go`
+
+**Example**:
+```go
+package main
+
+import (
+    "fmt"
+    "os"
+    "github.com/spf13/cobra"
+)
+
+var version = "0.1.0-alpha"
+
+func main() {
+    rootCmd := &cobra.Command{
+        Use:   "growth",
+        Short: "Git-native career development manager",
+        Long:  `growth.md - Track skills, goals, and learning paths in plain Markdown`,
+        Version: version,
+    }
+
+    if err := rootCmd.Execute(); err != nil {
+        fmt.Fprintln(os.Stderr, err)
+        os.Exit(1)
+    }
+}
+```
+
+---
+
+### 1.4 Set Up Makefile
+- [ ] Create `Makefile` with common tasks:
+  - `make build` - Build binary
+  - `make test` - Run tests
+  - `make lint` - Run linter
+  - `make clean` - Clean build artifacts
+  - `make install` - Install to `$GOPATH/bin`
+
+**Files to create**:
+- `Makefile`
+
+**Example targets**:
+```makefile
+.PHONY: build test lint clean install
+
+build:
+	go build -o bin/growth cmd/growth/main.go
+
+test:
+	go test -v ./...
+
+lint:
+	golangci-lint run
+
+clean:
+	rm -rf bin/
+
+install:
+	go install cmd/growth/main.go
+```
+
+---
+
+### 1.5 Create README.md
+- [ ] Create basic README with:
+  - Project description
+  - Installation instructions
+  - Quick start example
+  - Link to concept doc
+  - Development status (MVP in progress)
+
+**Files to create**:
+- `README.md`
+
+---
+
+### 1.6 Add MIT License
+- [ ] Create `LICENSE` file with MIT license text
+- [ ] Update copyright year and author
+
+**Files to create**:
+- `LICENSE`
+
+---
+
+### 1.7 Set Up Testing Structure
+- [ ] Create `tests/fixtures/` directory for test data
+- [ ] Create example test: `internal/core/skill_test.go`
+- [ ] Verify: `make test` passes
+
+**Files to create**:
+- `tests/fixtures/.gitkeep`
+- `internal/core/skill_test.go` (placeholder)
+
+---
+
+### 1.8 Configure golangci-lint
+- [ ] Create `.golangci.yml` configuration
+- [ ] Enable key linters: govet, errcheck, staticcheck, unused
+- [ ] Run: `make lint` (should pass on empty project)
+
+**Files to create**:
+- `.golangci.yml`
+
+---
+
+### 1.9 Set Up GitHub Actions (Optional but Recommended)
+- [ ] Create `.github/workflows/test.yml` for CI
+- [ ] Run tests on push to main
+- [ ] Run linter
+
+**Files to create**:
+- `.github/workflows/test.yml`
+
+---
+
+### 1.10 Initial Git Commit
+- [ ] Initialize git repo: `git init`
+- [ ] Add all files: `git add .`
+- [ ] Commit: `git commit -m "Initial project structure"`
+- [ ] Tag: `git tag v0.1.0-alpha`
+
+**Verification**: Clean git status, tagged commit
+
+---
+
+## Phase 2: Core Domain Models
+
+**Goal**: Define Go structs for all entities with proper validation
+
+### 2.1 Create Base Entity Types
+- [ ] Create `internal/core/types.go`
+- [ ] Define common types:
+  - `EntityID` (string type alias)
+  - `Status` (enum: active, completed, archived)
+  - `Priority` (enum: high, medium, low)
+  - `ProficiencyLevel` (enum: beginner, intermediate, advanced, expert)
+  - `SkillStatus` (enum: not-started, learning, mastered)
+
+**Files to create**:
+- `internal/core/types.go`
+
+**Example**:
+```go
+package core
+
+type EntityID string
+
+type Status string
+const (
+    StatusActive    Status = "active"
+    StatusCompleted Status = "completed"
+    StatusArchived  Status = "archived"
+)
+
+type Priority string
+const (
+    PriorityHigh   Priority = "high"
+    PriorityMedium Priority = "medium"
+    PriorityLow    Priority = "low"
+)
+
+type ProficiencyLevel string
+const (
+    LevelBeginner     ProficiencyLevel = "beginner"
+    LevelIntermediate ProficiencyLevel = "intermediate"
+    LevelAdvanced     ProficiencyLevel = "advanced"
+    LevelExpert       ProficiencyLevel = "expert"
+)
+
+type SkillStatus string
+const (
+    SkillNotStarted SkillStatus = "not-started"
+    SkillLearning   SkillStatus = "learning"
+    SkillMastered   SkillStatus = "mastered"
+)
+```
+
+---
+
+### 2.2 Create Skill Entity
+- [ ] Create `internal/core/skill.go`
+- [ ] Define `Skill` struct with all fields from whitepaper
+- [ ] Add validation method: `Validate() error`
+- [ ] Add `NewSkill()` constructor
+- [ ] Write tests in `internal/core/skill_test.go`
+
+**Files to create**:
+- `internal/core/skill.go`
+- `internal/core/skill_test.go`
+
+**Struct fields**:
+```go
+type Skill struct {
+    ID        EntityID         `yaml:"id"`
+    Title     string           `yaml:"title"`
+    Category  string           `yaml:"category"`
+    Level     ProficiencyLevel `yaml:"level"`
+    Status    SkillStatus      `yaml:"status"`
+    Created   time.Time        `yaml:"created"`
+    Updated   time.Time        `yaml:"updated"`
+    Resources []EntityID       `yaml:"resources"`
+    Tags      []string         `yaml:"tags"`
+}
+```
+
+---
+
+### 2.3 Create Goal Entity
+- [ ] Create `internal/core/goal.go`
+- [ ] Define `Goal` struct with all fields
+- [ ] Add validation method
+- [ ] Add `NewGoal()` constructor
+- [ ] Write tests
+
+**Files to create**:
+- `internal/core/goal.go`
+- `internal/core/goal_test.go`
+
+**Key fields**:
+```go
+type Goal struct {
+    ID            EntityID   `yaml:"id"`
+    Title         string     `yaml:"title"`
+    Status        Status     `yaml:"status"`
+    Priority      Priority   `yaml:"priority"`
+    Created       time.Time  `yaml:"created"`
+    Updated       time.Time  `yaml:"updated"`
+    TargetDate    *time.Time `yaml:"targetDate,omitempty"`
+    LearningPaths []EntityID `yaml:"learningPaths"`
+    Milestones    []EntityID `yaml:"milestones"`
+    Tags          []string   `yaml:"tags"`
+}
+```
+
+---
+
+### 2.4 Create Learning Path Entity
+- [ ] Create `internal/core/path.go`
+- [ ] Define `LearningPath` struct
+- [ ] Add `PathType` enum (ai-generated, manual)
+- [ ] Add validation and constructor
+- [ ] Write tests
+
+**Files to create**:
+- `internal/core/path.go`
+- `internal/core/path_test.go`
+
+---
+
+### 2.5 Create Phase Entity
+- [ ] Create `internal/core/phase.go`
+- [ ] Define `Phase` struct
+- [ ] Define `SkillRequirement` struct (skill ID + target level)
+- [ ] Add validation and constructor
+- [ ] Write tests
+
+**Files to create**:
+- `internal/core/phase.go`
+- `internal/core/phase_test.go`
+
+**SkillRequirement**:
+```go
+type SkillRequirement struct {
+    SkillID     EntityID         `yaml:"skillId"`
+    TargetLevel ProficiencyLevel `yaml:"targetLevel"`
+}
+
+type Phase struct {
+    ID               EntityID           `yaml:"id"`
+    PathID           EntityID           `yaml:"pathId"`
+    Title            string             `yaml:"title"`
+    Order            int                `yaml:"order"`
+    EstimatedDuration string            `yaml:"estimatedDuration,omitempty"`
+    RequiredSkills   []SkillRequirement `yaml:"requiredSkills"`
+    Milestones       []EntityID         `yaml:"milestones"`
+}
+```
+
+---
+
+### 2.6 Create Resource Entity
+- [ ] Create `internal/core/resource.go`
+- [ ] Define `Resource` struct
+- [ ] Add `ResourceType` enum (book, course, video, article, project, documentation)
+- [ ] Add `ResourceStatus` enum (not-started, in-progress, completed)
+- [ ] Add validation and constructor
+- [ ] Write tests
+
+**Files to create**:
+- `internal/core/resource.go`
+- `internal/core/resource_test.go`
+
+---
+
+### 2.7 Create Milestone Entity
+- [ ] Create `internal/core/milestone.go`
+- [ ] Define `Milestone` struct
+- [ ] Add `MilestoneType` enum (goal-level, path-level, skill-level)
+- [ ] Add `ReferenceType` enum (goal, path, skill)
+- [ ] Add validation and constructor
+- [ ] Write tests
+
+**Files to create**:
+- `internal/core/milestone.go`
+- `internal/core/milestone_test.go`
+
+---
+
+### 2.8 Create Progress Log Entity
+- [ ] Create `internal/core/progress.go`
+- [ ] Define `ProgressLog` struct
+- [ ] Add helper for getting week-of date
+- [ ] Add validation and constructor
+- [ ] Write tests
+
+**Files to create**:
+- `internal/core/progress.go`
+- `internal/core/progress_test.go`
+
+**Struct**:
+```go
+type ProgressLog struct {
+    ID                 EntityID   `yaml:"id"`
+    WeekOf             time.Time  `yaml:"weekOf"`
+    HoursInvested      float64    `yaml:"hoursInvested,omitempty"`
+    SkillsWorked       []EntityID `yaml:"skillsWorked"`
+    ResourcesUsed      []EntityID `yaml:"resourcesUsed"`
+    MilestonesAchieved []EntityID `yaml:"milestonesAchieved"`
+    Mood               string     `yaml:"mood,omitempty"`
+}
+```
+
+---
+
+## Phase 3: Storage Layer
+
+**Goal**: Implement Markdown file I/O with YAML frontmatter parsing
+
+### 3.1 Create Frontmatter Parser
+- [ ] Create `internal/storage/frontmatter.go`
+- [ ] Implement `ParseFrontmatter(content []byte) (map[string]interface{}, string, error)`
+- [ ] Implement `SerializeFrontmatter(data interface{}) ([]byte, error)`
+- [ ] Handle edge cases (missing frontmatter, malformed YAML)
+- [ ] Write tests
+
+**Files to create**:
+- `internal/storage/frontmatter.go`
+- `internal/storage/frontmatter_test.go`
+
+**Functions**:
+```go
+// ParseFrontmatter extracts YAML frontmatter and body from markdown
+func ParseFrontmatter(content []byte) (frontmatter map[string]interface{}, body string, err error)
+
+// SerializeFrontmatter combines frontmatter and body into markdown
+func SerializeFrontmatter(frontmatter interface{}, body string) ([]byte, error)
+```
+
+---
+
+### 3.2 Create Entity Repository Interface
+- [ ] Create `internal/storage/repository.go`
+- [ ] Define `Repository[T]` interface with CRUD operations:
+  - `Create(entity T) error`
+  - `GetByID(id EntityID) (T, error)`
+  - `GetAll() ([]T, error)`
+  - `Update(entity T) error`
+  - `Delete(id EntityID) error`
+  - `Search(query string) ([]T, error)`
+
+**Files to create**:
+- `internal/storage/repository.go`
+
+**Interface**:
+```go
+type Repository[T any] interface {
+    Create(entity T) error
+    GetByID(id EntityID) (*T, error)
+    GetAll() ([]T, error)
+    Update(entity T) error
+    Delete(id EntityID) error
+    Search(query string) ([]T, error)
+}
+```
+
+---
+
+### 3.3 Implement Filesystem Repository
+- [ ] Create `internal/storage/fs_repository.go`
+- [ ] Implement `FilesystemRepository[T]` struct
+- [ ] Implement all Repository interface methods
+- [ ] Handle file naming: `{type}-{id}-{slug}.md`
+- [ ] Add ID generation (sequential: 001, 002, etc.)
+- [ ] Write tests with temp directories
+
+**Files to create**:
+- `internal/storage/fs_repository.go`
+- `internal/storage/fs_repository_test.go`
+
+**Key methods**:
+```go
+type FilesystemRepository[T any] struct {
+    basePath    string
+    entityType  string
+}
+
+func NewFilesystemRepository[T any](basePath, entityType string) *FilesystemRepository[T]
+
+func (r *FilesystemRepository[T]) Create(entity T) error
+func (r *FilesystemRepository[T]) GetByID(id EntityID) (*T, error)
+// ... etc
+```
+
+---
+
+### 3.4 Implement Skill Repository
+- [ ] Create `internal/storage/skill_repository.go`
+- [ ] Create wrapper around `FilesystemRepository[Skill]`
+- [ ] Add skill-specific queries (by category, level, status)
+- [ ] Write tests
+
+**Files to create**:
+- `internal/storage/skill_repository.go`
+- `internal/storage/skill_repository_test.go`
+
+---
+
+### 3.5 Implement Config Management
+- [ ] Create `internal/storage/config.go`
+- [ ] Define `Config` struct matching whitepaper spec
+- [ ] Implement `LoadConfig(path string) (*Config, error)`
+- [ ] Implement `SaveConfig(config *Config, path string) error`
+- [ ] Add default config generation
+- [ ] Write tests
+
+**Files to create**:
+- `internal/storage/config.go`
+- `internal/storage/config_test.go`
+
+**Config struct**:
+```go
+type Config struct {
+    Version  string      `yaml:"version"`
+    User     UserConfig  `yaml:"user"`
+    AI       AIConfig    `yaml:"ai"`
+    Git      GitConfig   `yaml:"git"`
+    Progress ProgressConfig `yaml:"progress"`
+    Display  DisplayConfig  `yaml:"display"`
+    MCP      MCPConfig   `yaml:"mcp"`
+}
+```
+
+---
+
+### 3.6 Implement Index/Cache Layer (Optional for MVP)
+- [ ] Create `internal/storage/index.go`
+- [ ] Implement in-memory index for fast lookups
+- [ ] Cache entity metadata (ID, title, type)
+- [ ] Rebuild index on startup
+- [ ] Write tests
+
+**Files to create**:
+- `internal/storage/index.go`
+- `internal/storage/index_test.go`
+
+**Note**: This can be deferred if performance is acceptable without it.
+
+---
+
+### 3.7 Create Storage Integration Tests
+- [ ] Create `tests/storage_integration_test.go`
+- [ ] Test full CRUD cycle for each entity type
+- [ ] Test concurrent access
+- [ ] Test error handling (permissions, corrupted files)
+
+**Files to create**:
+- `tests/storage_integration_test.go`
+
+---
+
+## Phase 4: CLI Framework
+
+**Goal**: Set up Cobra commands structure and global flags
+
+### 4.1 Create Root Command
+- [ ] Create `internal/cli/root.go`
+- [ ] Define root command with description
+- [ ] Add global flags:
+  - `--config` (config file path)
+  - `--repo` (growth repository path)
+  - `--format` (output format: table, json, yaml)
+  - `--verbose/-v` (verbose output)
+- [ ] Add PersistentPreRun to load config
+- [ ] Wire up to `cmd/growth/main.go`
+
+**Files to create**:
+- `internal/cli/root.go`
+
+**Example**:
+```go
+var (
+    cfgFile    string
+    repoPath   string
+    outputFormat string
+    verbose    bool
+)
+
+var rootCmd = &cobra.Command{
+    Use:   "growth",
+    Short: "Git-native career development manager",
+    Long:  `Track your skills, goals, and learning paths in plain Markdown files`,
+    PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+        // Load config, initialize repository
+        return initializeApp()
+    },
+}
+
+func init() {
+    rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file")
+    rootCmd.PersistentFlags().StringVar(&repoPath, "repo", "", "growth repository path")
+    rootCmd.PersistentFlags().StringVar(&outputFormat, "format", "table", "output format")
+    rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
+}
+```
+
+---
+
+### 4.2 Create Init Command
+- [ ] Create `internal/cli/init.go`
+- [ ] Implement `growth init [directory]`
+- [ ] Create directory structure
+- [ ] Initialize Git repository
+- [ ] Create default `config.yml`
+- [ ] Create initial commit
+- [ ] Add interactive prompts (name, email, AI provider)
+
+**Files to create**:
+- `internal/cli/init.go`
+
+**Command structure**:
+```go
+var initCmd = &cobra.Command{
+    Use:   "init [directory]",
+    Short: "Initialize a new growth repository",
+    Args:  cobra.MaximumNArgs(1),
+    RunE:  runInit,
+}
+
+func runInit(cmd *cobra.Command, args []string) error {
+    // Implementation
+}
+```
+
+---
+
+### 4.3 Create Common Output Utilities
+- [ ] Create `internal/cli/output.go`
+- [ ] Implement `PrintTable(data interface{})`
+- [ ] Implement `PrintJSON(data interface{})`
+- [ ] Implement `PrintYAML(data interface{})`
+- [ ] Implement `PrintSuccess(message string)`
+- [ ] Implement `PrintError(err error)`
+
+**Files to create**:
+- `internal/cli/output.go`
+
+---
+
+### 4.4 Create Input/Prompt Utilities
+- [ ] Create `internal/cli/input.go`
+- [ ] Implement `PromptString(prompt string, defaultValue string) string`
+- [ ] Implement `PromptConfirm(prompt string) bool`
+- [ ] Implement `PromptSelect(prompt string, options []string) string`
+- [ ] Add validation helpers
+
+**Files to create**:
+- `internal/cli/input.go`
+
+---
+
+### 4.5 Create ID Generation Utilities
+- [ ] Create `internal/cli/id_gen.go`
+- [ ] Implement `GenerateNextID(entityType string) (EntityID, error)`
+- [ ] Scan existing files to find max ID
+- [ ] Zero-pad to 3 digits (001, 002, etc.)
+- [ ] Add slug generation from title
+
+**Files to create**:
+- `internal/cli/id_gen.go`
+
+---
+
+### 4.6 Test CLI Framework
+- [ ] Test `growth --help` shows all commands
+- [ ] Test `growth --version` shows version
+- [ ] Test `growth init` creates structure
+- [ ] Test global flags work
+
+**Verification**: All basic CLI commands work
+
+---
+
+## Phase 5: Entity Commands
+
+**Goal**: Implement CRUD commands for all entities
+
+### 5.1 Skill Commands - Create
+- [ ] Create `internal/cli/skill.go`
+- [ ] Implement `growth skill create <title> [flags]`
+- [ ] Flags: `--category`, `--level`, `--tags`
+- [ ] Generate ID and slug
+- [ ] Create markdown file with frontmatter
+- [ ] Print success message with ID
+
+**Files to create**:
+- `internal/cli/skill.go`
+
+**Command**:
+```bash
+growth skill create "Python" --category programming --level intermediate --tags python,ml
+```
+
+---
+
+### 5.2 Skill Commands - List & View
+- [ ] Implement `growth skill list [flags]`
+- [ ] Flags: `--category`, `--level`, `--status`
+- [ ] Display as table by default
+- [ ] Implement `growth skill view <id-or-slug>`
+- [ ] Show full details in formatted output
+
+**Commands**:
+```bash
+growth skill list --category ml
+growth skill view python
+```
+
+---
+
+### 5.3 Skill Commands - Edit & Delete
+- [ ] Implement `growth skill edit <id> [flags]`
+- [ ] Allow updating level, status, tags
+- [ ] Update `updated` timestamp
+- [ ] Implement `growth skill delete <id>`
+- [ ] Prompt for confirmation
+- [ ] Check for references before deleting
+
+**Commands**:
+```bash
+growth skill edit python --level advanced
+growth skill delete skill-005
+```
+
+---
+
+### 5.4 Goal Commands - Full CRUD
+- [ ] Create `internal/cli/goal.go`
+- [ ] Implement `growth goal create <title> [flags]`
+- [ ] Flags: `--priority`, `--target-date`
+- [ ] Implement `growth goal list [flags]`
+- [ ] Implement `growth goal view <id>`
+- [ ] Implement `growth goal edit <id> [flags]`
+- [ ] Implement `growth goal delete <id>`
+
+**Files to create**:
+- `internal/cli/goal.go`
+
+---
+
+### 5.5 Goal Commands - Path Management
+- [ ] Implement `growth goal add-path <goal-id> <path-id>`
+- [ ] Implement `growth goal remove-path <goal-id> <path-id>`
+- [ ] Update goal file frontmatter
+- [ ] Validate path exists
+
+**Commands**:
+```bash
+growth goal add-path goal-001 path-001
+growth goal remove-path goal-001 path-002
+```
+
+---
+
+### 5.6 Path Commands - Basic CRUD
+- [ ] Create `internal/cli/path.go`
+- [ ] Implement `growth path list [flags]`
+- [ ] Implement `growth path view <id>`
+- [ ] Implement `growth path edit <id>`
+- [ ] Implement `growth path delete <id>`
+
+**Files to create**:
+- `internal/cli/path.go`
+
+**Note**: Path generation (AI) will be in Phase 7
+
+---
+
+### 5.7 Resource Commands - Full CRUD
+- [ ] Create `internal/cli/resource.go`
+- [ ] Implement `growth resource create <title> --skill <id> --type <type> [flags]`
+- [ ] Flags: `--url`, `--author`, `--estimated-hours`
+- [ ] Implement `growth resource list [flags]`
+- [ ] Filter by skill, type, status
+- [ ] Implement `growth resource view <id>`
+- [ ] Implement `growth resource edit <id>`
+- [ ] Implement `growth resource delete <id>`
+
+**Files to create**:
+- `internal/cli/resource.go`
+
+---
+
+### 5.8 Resource Commands - Status Updates
+- [ ] Implement `growth resource start <id>`
+- [ ] Update status to `in-progress`
+- [ ] Implement `growth resource complete <id>`
+- [ ] Update status to `completed`
+- [ ] Add timestamp tracking
+
+**Commands**:
+```bash
+growth resource start resource-001
+growth resource complete resource-001
+```
+
+---
+
+### 5.9 Milestone Commands - Full CRUD
+- [ ] Create `internal/cli/milestone.go`
+- [ ] Implement `growth milestone create <title> --type <type> --ref <id>`
+- [ ] Implement `growth milestone list [flags]`
+- [ ] Filter by status, type
+- [ ] Implement `growth milestone view <id>`
+- [ ] Implement `growth milestone achieve <id> [flags]`
+- [ ] Flag: `--proof` (URL to evidence)
+- [ ] Set achievedDate to now
+
+**Files to create**:
+- `internal/cli/milestone.go`
+
+---
+
+### 5.10 Progress Commands - Log Entry
+- [ ] Create `internal/cli/progress.go`
+- [ ] Implement `growth progress log [message]`
+- [ ] Flags: `--skill`, `--resource`, `--milestone`
+- [ ] Create or update current week's log
+- [ ] Append to notes section
+- [ ] Update referenced entities
+
+**Files to create**:
+- `internal/cli/progress.go`
+
+**Command**:
+```bash
+growth progress log "Completed Fast.ai Lesson 3" --skill ml --resource fastai
+```
+
+---
+
+### 5.11 Progress Commands - View & Stats
+- [ ] Implement `growth progress view [flags]`
+- [ ] Flags: `--week`, `--month`, `--date`
+- [ ] Display formatted log
+- [ ] Implement `growth progress stats [flags]`
+- [ ] Show hours invested, skills worked on, consistency
+
+**Commands**:
+```bash
+growth progress view --week
+growth progress stats --month
+```
+
+---
+
+### 5.12 Search Command
+- [ ] Create `internal/cli/search.go`
+- [ ] Implement `growth search <query>`
+- [ ] Search across all entity types
+- [ ] Search in titles, tags, notes
+- [ ] Display results grouped by type
+
+**Files to create**:
+- `internal/cli/search.go`
+
+**Command**:
+```bash
+growth search "neural networks"
+```
+
+---
+
+### 5.13 Overview Command
+- [ ] Create `internal/cli/overview.go`
+- [ ] Implement `growth overview`
+- [ ] Display summary:
+  - Active goals count
+  - Skills in progress
+  - Recent progress logs
+  - Upcoming milestones
+- [ ] Text-based dashboard
+
+**Files to create**:
+- `internal/cli/overview.go`
+
+---
+
+### 5.14 Stats Command
+- [ ] Create `internal/cli/stats.go`
+- [ ] Implement `growth stats`
+- [ ] Calculate and display:
+  - Total skills (by level, status)
+  - Total goals (by status)
+  - Total hours invested
+  - Learning velocity (hours/week)
+  - Milestone completion rate
+
+**Files to create**:
+- `internal/cli/stats.go`
+
+---
+
+### 5.15 Integration Testing for Commands
+- [ ] Create `tests/cli_integration_test.go`
+- [ ] Test complete workflows:
+  - Create goal → generate path → log progress
+  - Create skill → add resource → mark complete
+  - Create milestone → achieve milestone
+- [ ] Test error cases
+
+**Files to create**:
+- `tests/cli_integration_test.go`
+
+---
+
+## Phase 6: Git Integration
+
+**Goal**: Auto-commit changes and provide git utilities
+
+### 6.1 Create Git Operations Module
+- [ ] Create `internal/git/operations.go`
+- [ ] Implement `InitRepo(path string) error`
+- [ ] Implement `Commit(message string, files []string) error`
+- [ ] Implement `Status() ([]string, error)`
+- [ ] Implement `IsRepo(path string) bool`
+
+**Files to create**:
+- `internal/git/operations.go`
+- `internal/git/operations_test.go`
+
+---
+
+### 6.2 Integrate Git with Storage Layer
+- [ ] Modify `FilesystemRepository` to optionally auto-commit
+- [ ] Check config: `git.autoCommit` and `git.commitOnUpdate`
+- [ ] Generate commit messages using template
+- [ ] Handle git errors gracefully
+
+**Modified files**:
+- `internal/storage/fs_repository.go`
+
+---
+
+### 6.3 Add Git Commands to CLI
+- [ ] Create `internal/cli/git.go`
+- [ ] Implement `growth git status` (wrapper)
+- [ ] Implement `growth git log` (wrapper)
+- [ ] Add `--no-commit` flag to entity commands
+
+**Files to create**:
+- `internal/cli/git.go`
+
+---
+
+### 6.4 Test Git Integration
+- [ ] Test auto-commit on entity creation
+- [ ] Test commit message formatting
+- [ ] Test behavior when not a git repo
+- [ ] Test `--no-commit` flag
+
+**Tests to write**:
+- `tests/git_integration_test.go`
+
+---
+
+## Phase 7: AI Integration (Basic)
+
+**Goal**: Implement basic AI path generation using OpenAI or Anthropic
+
+### 7.1 Create AI Client Module
+- [ ] Create `internal/ai/client.go`
+- [ ] Define `AIClient` interface:
+  - `GeneratePath(goal Goal, skills []Skill, context string) (LearningPath, error)`
+  - `SuggestResources(skill Skill) ([]Resource, error)`
+- [ ] Implement OpenAI client: `internal/ai/openai_client.go`
+- [ ] Add API key loading from env var
+- [ ] Handle rate limits and errors
+
+**Files to create**:
+- `internal/ai/client.go`
+- `internal/ai/openai_client.go`
+
+---
+
+### 7.2 Create Path Generation Prompt
+- [ ] Create `internal/ai/prompts.go`
+- [ ] Define path generation prompt template
+- [ ] Include goal, skills, background in prompt
+- [ ] Request structured markdown output
+- [ ] Add examples for few-shot learning
+
+**Files to create**:
+- `internal/ai/prompts.go`
+
+**Prompt structure**:
+```go
+const PathGenerationPrompt = `
+You are an expert career coach for software engineers. Generate a personalized learning path.
+
+CONTEXT:
+- Goal: {{.GoalTitle}}
+- Current Skills: {{.SkillsList}}
+- Background: {{.UserBackground}}
+
+... [rest of prompt]
+`
+```
+
+---
+
+### 7.3 Implement Path Generator
+- [ ] Create `internal/ai/path_generator.go`
+- [ ] Implement `GenerateLearningPath(goal Goal, skills []Skill, config AIConfig) (*LearningPath, error)`
+- [ ] Parse AI response into structured Path
+- [ ] Create Phase entities
+- [ ] Save path and phases to files
+- [ ] Handle parsing errors
+
+**Files to create**:
+- `internal/ai/path_generator.go`
+- `internal/ai/path_generator_test.go`
+
+---
+
+### 7.4 Add Path Generate Command
+- [ ] Update `internal/cli/path.go`
+- [ ] Implement `growth path generate <goal-id> [flags]`
+- [ ] Flags: `--approach`, `--model`
+- [ ] Show progress indicator during generation
+- [ ] Display generated path summary
+- [ ] Automatically link path to goal
+
+**Command**:
+```bash
+growth path generate goal-001 --approach "fast.ai top-down"
+```
+
+---
+
+### 7.5 Test AI Integration
+- [ ] Create mock AI client for testing
+- [ ] Test prompt generation
+- [ ] Test response parsing
+- [ ] Test error handling (API errors, invalid responses)
+- [ ] Manual test with real AI API (document in README)
+
+**Files to create**:
+- `internal/ai/mock_client.go`
+- `tests/ai_integration_test.go`
+
+---
+
+## Phase 8: Polish & Testing
+
+**Goal**: Add final touches, comprehensive testing, and documentation
+
+### 8.1 Add Validation Across All Entities
+- [ ] Review all entity constructors
+- [ ] Add comprehensive validation:
+  - Required fields present
+  - Enums are valid values
+  - Dates are valid
+  - IDs exist (for references)
+- [ ] Return clear error messages
+
+**Files to update**:
+- All `internal/core/*.go` files
+
+---
+
+### 8.2 Add Comprehensive Error Handling
+- [ ] Review all CLI commands
+- [ ] Add user-friendly error messages
+- [ ] Handle common errors gracefully:
+  - File not found
+  - Invalid ID
+  - Permission denied
+  - Git not initialized
+  - Config missing
+- [ ] Add `--debug` flag for verbose errors
+
+**Files to update**:
+- All `internal/cli/*.go` files
+
+---
+
+### 8.3 Write User Documentation
+- [ ] Update `README.md` with full getting started guide
+- [ ] Create `docs/getting-started.md`
+- [ ] Create `docs/cli-reference.md` (all commands)
+- [ ] Create `docs/configuration.md` (config.yml options)
+- [ ] Add examples for common workflows
+
+**Files to create/update**:
+- `README.md`
+- `docs/getting-started.md`
+- `docs/cli-reference.md`
+- `docs/configuration.md`
+
+---
+
+### 8.4 Add Example Learning Paths
+- [ ] Create `examples/ml-engineer/` with sample path
+- [ ] Create `examples/backend-specialist/` with sample path
+- [ ] Create `examples/frontend-developer/` with sample path
+- [ ] Each example includes:
+  - Goal file
+  - Path file
+  - Phases
+  - Skills
+  - Resources
+
+**Directories to create**:
+- `examples/ml-engineer/`
+- `examples/backend-specialist/`
+- `examples/frontend-developer/`
+
+---
+
+### 8.5 Final Testing & Bug Fixes
+- [ ] Run full test suite: `make test`
+- [ ] Run linter: `make lint`
+- [ ] Test on clean system (fresh git clone)
+- [ ] Test all documented workflows
+- [ ] Fix any discovered bugs
+- [ ] Achieve >80% test coverage
+
+**Verification**: All tests pass, no critical bugs
+
+---
+
+### 8.6 Build & Release
+- [ ] Build binaries for all platforms:
+  - `make build-linux`
+  - `make build-macos`
+  - `make build-windows`
+- [ ] Test binary on each platform
+- [ ] Create GitHub release (v0.1.0)
+- [ ] Upload binaries
+- [ ] Tag commit: `git tag v0.1.0`
+
+**Release artifacts**:
+- `growth-linux-amd64`
+- `growth-darwin-amd64`
+- `growth-darwin-arm64`
+- `growth-windows-amd64.exe`
+
+---
+
+## Next Steps After MVP
+
+Once MVP is complete, consider:
+
+1. **TUI Dashboard** (Phase 2 from roadmap)
+   - Implement `growth board` using Bubble Tea
+   - Interactive, real-time dashboard
+
+2. **MCP Server** (Phase 3 from roadmap)
+   - Implement MCP protocol
+   - Enable Claude integration
+
+3. **Enhanced AI Features**
+   - Path regeneration based on progress
+   - Resource recommendations
+   - Skill gap analysis
+
+4. **Community Features**
+   - Path templates repository
+   - Sharing mechanism
+   - Import/export
+
+---
+
+## Tracking Progress
+
+**How to use this document**:
+1. Mark tasks complete with `[x]` as you finish them
+2. Commit changes to this file after each session
+3. Update progress percentages at the top
+4. Add notes to decisions log as needed
+5. Cross-reference commit SHAs for major milestones
