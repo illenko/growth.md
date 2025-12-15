@@ -41,7 +41,6 @@ func NewResource(id EntityID, title string, resourceType ResourceType, skillID E
 	return resource, nil
 }
 
-// Validate checks if the resource is valid
 func (r *Resource) Validate() error {
 	if r.ID == "" {
 		return errors.New("resource ID is required")

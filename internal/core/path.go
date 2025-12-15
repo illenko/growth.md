@@ -11,17 +11,15 @@ type LearningPath struct {
 	Title             string     `yaml:"title"`
 	Type              PathType   `yaml:"type"`
 	Status            Status     `yaml:"status"`
-	GeneratedBy       string     `yaml:"generatedBy,omitempty"`       // AI model used for generation
-	GenerationContext string     `yaml:"generationContext,omitempty"` // Context used for AI generation
+	GeneratedBy       string     `yaml:"generatedBy,omitempty"`
+	GenerationContext string     `yaml:"generationContext,omitempty"`
 	Phases            []EntityID `yaml:"phases,omitempty"`
 	Tags              []string   `yaml:"tags,omitempty"`
 	Timestamps
 
-	// Body contains the markdown content (philosophy, starting point, phases detail)
 	Body string `yaml:"-"`
 }
 
-// NewLearningPath creates a new Learning Path
 func NewLearningPath(id EntityID, title string, pathType PathType) (*LearningPath, error) {
 	path := &LearningPath{
 		ID:         id,
@@ -40,7 +38,6 @@ func NewLearningPath(id EntityID, title string, pathType PathType) (*LearningPat
 	return path, nil
 }
 
-// Validate checks if the learning path is valid
 func (p *LearningPath) Validate() error {
 	if p.ID == "" {
 		return errors.New("path ID is required")
@@ -69,9 +66,7 @@ func (p *LearningPath) Validate() error {
 	return nil
 }
 
-// AddPhase adds a phase to the learning path (maintains order)
 func (p *LearningPath) AddPhase(phaseID EntityID) {
-	// Check if phase already exists
 	for _, id := range p.Phases {
 		if id == phaseID {
 			return
@@ -81,7 +76,6 @@ func (p *LearningPath) AddPhase(phaseID EntityID) {
 	p.Touch()
 }
 
-// RemovePhase removes a phase from the learning path
 func (p *LearningPath) RemovePhase(phaseID EntityID) {
 	for i, id := range p.Phases {
 		if id == phaseID {
@@ -92,7 +86,6 @@ func (p *LearningPath) RemovePhase(phaseID EntityID) {
 	}
 }
 
-// AddTag adds a tag to the path
 func (p *LearningPath) AddTag(tag string) {
 	tag = strings.ToLower(strings.TrimSpace(tag))
 	if tag == "" {
@@ -108,7 +101,6 @@ func (p *LearningPath) AddTag(tag string) {
 	p.Touch()
 }
 
-// UpdateStatus updates the path's status
 func (p *LearningPath) UpdateStatus(status Status) error {
 	if !status.IsValid() {
 		return errors.New("invalid path status")
@@ -118,7 +110,6 @@ func (p *LearningPath) UpdateStatus(status Status) error {
 	return nil
 }
 
-// SetGenerationInfo sets AI generation metadata
 func (p *LearningPath) SetGenerationInfo(model, context string) {
 	p.GeneratedBy = model
 	p.GenerationContext = context

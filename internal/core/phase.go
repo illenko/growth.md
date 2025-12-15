@@ -45,7 +45,6 @@ func NewPhase(id, pathID EntityID, title string, order int) (*Phase, error) {
 	return phase, nil
 }
 
-// Validate checks if the phase is valid
 func (p *Phase) Validate() error {
 	if p.ID == "" {
 		return errors.New("phase ID is required")

@@ -44,7 +44,6 @@ func NewFilesystemRepository[T any](basePath, entityType string) (*FilesystemRep
 	}, nil
 }
 
-// Create persists a new entity to storage.
 func (r *FilesystemRepository[T]) Create(entity *T) error {
 	if entity == nil {
 		return errors.New("entity cannot be nil")
@@ -67,7 +66,7 @@ func (r *FilesystemRepository[T]) Create(entity *T) error {
 	// Generate filename
 	title := r.getEntityTitle(entity)
 	filename := r.generateFileName(id, title)
-	filepath := filepath.Join(r.basePath, filename)
+	fp := filepath.Join(r.basePath, filename)
 
 	// Serialize entity
 	content, err := r.serializeEntity(entity)
@@ -76,19 +75,17 @@ func (r *FilesystemRepository[T]) Create(entity *T) error {
 	}
 
 	// Write to file
-	if err := os.WriteFile(filepath, content, 0644); err != nil {
-		return fmt.Errorf("failed to write file %s: %w", filepath, err)
+	if err := os.WriteFile(fp, content, 0644); err != nil {
+		return fmt.Errorf("failed to write file %s: %w", fp, err)
 	}
 
 	return nil
 }
 
-// GetByID retrieves an entity by its ID (metadata only, without body).
 func (r *FilesystemRepository[T]) GetByID(id core.EntityID) (*T, error) {
 	return r.getByID(id, false)
 }
 
-// GetByIDWithBody retrieves an entity by its ID including the markdown body.
 func (r *FilesystemRepository[T]) GetByIDWithBody(id core.EntityID) (*T, error) {
 	return r.getByID(id, true)
 }
@@ -114,7 +111,6 @@ func (r *FilesystemRepository[T]) getByID(id core.EntityID, includeBody bool) (*
 	return entity, nil
 }
 
-// GetAll retrieves all entities of this type (metadata only, without bodies).
 func (r *FilesystemRepository[T]) GetAll() ([]*T, error) {
 	pattern := filepath.Join(r.basePath, fmt.Sprintf("%s-*.md", r.entityType))
 	matches, err := filepath.Glob(pattern)
@@ -135,7 +131,6 @@ func (r *FilesystemRepository[T]) GetAll() ([]*T, error) {
 	return entities, nil
 }
 
-// Update persists changes to an existing entity.
 func (r *FilesystemRepository[T]) Update(entity *T) error {
 	if entity == nil {
 		return errors.New("entity cannot be nil")
@@ -180,7 +175,6 @@ func (r *FilesystemRepository[T]) Update(entity *T) error {
 	return nil
 }
 
-// Delete removes an entity from storage by its ID.
 func (r *FilesystemRepository[T]) Delete(id core.EntityID) error {
 	if id == "" {
 		return errors.New("id cannot be empty")
@@ -198,7 +192,6 @@ func (r *FilesystemRepository[T]) Delete(id core.EntityID) error {
 	return nil
 }
 
-// Search finds entities matching the given query string.
 func (r *FilesystemRepository[T]) Search(query string) ([]*T, error) {
 	if query == "" {
 		return r.GetAll()
@@ -234,7 +227,6 @@ func (r *FilesystemRepository[T]) Search(query string) ([]*T, error) {
 	return results, nil
 }
 
-// Exists checks if an entity with the given ID exists.
 func (r *FilesystemRepository[T]) Exists(id core.EntityID) (bool, error) {
 	if id == "" {
 		return false, errors.New("id cannot be empty")
@@ -249,9 +241,6 @@ func (r *FilesystemRepository[T]) Exists(id core.EntityID) (bool, error) {
 	return len(matches) > 0, nil
 }
 
-// Helper functions
-
-// findFileByID finds a file matching the given entity ID.
 func (r *FilesystemRepository[T]) findFileByID(id core.EntityID) (string, error) {
 	// Pattern matches: {id}-{slug}.md (e.g., "skill-001-python.md")
 	pattern := filepath.Join(r.basePath, fmt.Sprintf("%s-*.md", id))
@@ -271,7 +260,6 @@ func (r *FilesystemRepository[T]) findFileByID(id core.EntityID) (string, error)
 	return matches[0], nil
 }
 
-// parseEntityFromFile reads a file and parses it into an entity.
 func (r *FilesystemRepository[T]) parseEntityFromFile(filePath string, includeBody bool) (*T, error) {
 	content, err := os.ReadFile(filePath)
 	if err != nil {
@@ -302,7 +290,6 @@ func (r *FilesystemRepository[T]) parseEntityFromFile(filePath string, includeBo
 	return &entity, nil
 }
 
-// serializeEntity converts an entity to markdown with YAML frontmatter.
 func (r *FilesystemRepository[T]) serializeEntity(entity *T) ([]byte, error) {
 	// Extract body if present
 	body := r.getEntityBody(entity)
@@ -327,7 +314,6 @@ func (r *FilesystemRepository[T]) generateFileName(id core.EntityID, title strin
 	return fmt.Sprintf("%s-%s.md", id, slug)
 }
 
-// getEntityID extracts the ID field from an entity using reflection.
 func (r *FilesystemRepository[T]) getEntityID(entity *T) (core.EntityID, error) {
 	v := reflect.ValueOf(entity).Elem()
 	idField := v.FieldByName("ID")
@@ -347,7 +333,6 @@ func (r *FilesystemRepository[T]) getEntityID(entity *T) (core.EntityID, error) 
 	return id, nil
 }
 
-// getEntityTitle extracts the Title field from an entity using reflection.
 func (r *FilesystemRepository[T]) getEntityTitle(entity *T) string {
 	v := reflect.ValueOf(entity).Elem()
 	titleField := v.FieldByName("Title")
@@ -363,7 +348,6 @@ func (r *FilesystemRepository[T]) getEntityTitle(entity *T) string {
 	return title
 }
 
-// getEntityBody extracts the Body field from an entity using reflection.
 func (r *FilesystemRepository[T]) getEntityBody(entity *T) string {
 	v := reflect.ValueOf(entity).Elem()
 	bodyField := v.FieldByName("Body")
@@ -379,7 +363,6 @@ func (r *FilesystemRepository[T]) getEntityBody(entity *T) string {
 	return body
 }
 
-// setEntityBody sets the Body field of an entity using reflection.
 func (r *FilesystemRepository[T]) setEntityBody(entity *T, body string) {
 	v := reflect.ValueOf(entity).Elem()
 	bodyField := v.FieldByName("Body")
@@ -390,7 +373,6 @@ func (r *FilesystemRepository[T]) setEntityBody(entity *T, body string) {
 	bodyField.SetString(body)
 }
 
-// getEntityTags extracts the Tags field from an entity using reflection.
 func (r *FilesystemRepository[T]) getEntityTags(entity *T) []string {
 	v := reflect.ValueOf(entity).Elem()
 	tagsField := v.FieldByName("Tags")
@@ -406,7 +388,6 @@ func (r *FilesystemRepository[T]) getEntityTags(entity *T) []string {
 	return tags
 }
 
-// slugify converts a string to a URL-safe slug.
 func slugify(s string) string {
 	// Convert to lowercase
 	s = strings.ToLower(s)

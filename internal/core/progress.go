@@ -42,7 +42,6 @@ func NewProgressLog(id EntityID, weekOf time.Time) (*ProgressLog, error) {
 	return log, nil
 }
 
-// Validate checks if the progress log is valid
 func (p *ProgressLog) Validate() error {
 	if p.ID == "" {
 		return errors.New("progress log ID is required")

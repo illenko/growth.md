@@ -14,7 +14,6 @@ const (
 	StatusArchived  Status = "archived"
 )
 
-// IsValid checks if the status is valid
 func (s Status) IsValid() bool {
 	switch s {
 	case StatusActive, StatusCompleted, StatusArchived:
@@ -32,7 +31,6 @@ const (
 	PriorityLow    Priority = "low"
 )
 
-// IsValid checks if the priority is valid
 func (p Priority) IsValid() bool {
 	switch p {
 	case PriorityHigh, PriorityMedium, PriorityLow:
@@ -51,7 +49,6 @@ const (
 	LevelExpert       ProficiencyLevel = "expert"
 )
 
-// IsValid checks if the proficiency level is valid
 func (l ProficiencyLevel) IsValid() bool {
 	switch l {
 	case LevelBeginner, LevelIntermediate, LevelAdvanced, LevelExpert:
@@ -69,7 +66,6 @@ const (
 	SkillMastered   SkillStatus = "mastered"
 )
 
-// IsValid checks if the skill status is valid
 func (s SkillStatus) IsValid() bool {
 	switch s {
 	case SkillNotStarted, SkillLearning, SkillMastered:
@@ -90,7 +86,6 @@ const (
 	ResourceDocumentation ResourceType = "documentation"
 )
 
-// IsValid checks if the resource type is valid
 func (r ResourceType) IsValid() bool {
 	switch r {
 	case ResourceBook, ResourceCourse, ResourceVideo, ResourceArticle, ResourceProject, ResourceDocumentation:
@@ -108,7 +103,6 @@ const (
 	ResourceCompleted  ResourceStatus = "completed"
 )
 
-// IsValid checks if the resource status is valid
 func (r ResourceStatus) IsValid() bool {
 	switch r {
 	case ResourceNotStarted, ResourceInProgress, ResourceCompleted:
@@ -125,7 +119,6 @@ const (
 	PathTypeManual      PathType = "manual"
 )
 
-// IsValid checks if the path type is valid
 func (p PathType) IsValid() bool {
 	switch p {
 	case PathTypeAIGenerated, PathTypeManual:
@@ -143,7 +136,6 @@ const (
 	MilestoneSkillLevel MilestoneType = "skill-level"
 )
 
-// IsValid checks if the milestone type is valid
 func (m MilestoneType) IsValid() bool {
 	switch m {
 	case MilestoneGoalLevel, MilestonePathLevel, MilestoneSkillLevel:
@@ -161,7 +153,6 @@ const (
 	ReferenceSkill ReferenceType = "skill"
 )
 
-// IsValid checks if the reference type is valid
 func (r ReferenceType) IsValid() bool {
 	switch r {
 	case ReferenceGoal, ReferencePath, ReferenceSkill:
@@ -170,13 +161,11 @@ func (r ReferenceType) IsValid() bool {
 	return false
 }
 
-// Timestamps is a common struct for created/updated times
 type Timestamps struct {
 	Created time.Time `yaml:"created"`
 	Updated time.Time `yaml:"updated"`
 }
 
-// NewTimestamps creates a new Timestamps with current time
 func NewTimestamps() Timestamps {
 	now := time.Now()
 	return Timestamps{
@@ -185,7 +174,6 @@ func NewTimestamps() Timestamps {
 	}
 }
 
-// Touch updates the Updated timestamp to now
 func (t *Timestamps) Touch() {
 	t.Updated = time.Now()
 }

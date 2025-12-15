@@ -22,7 +22,6 @@ type Goal struct {
 	Body string `yaml:"-"`
 }
 
-// NewGoal creates a new Goal with the given title and priority
 func NewGoal(id EntityID, title string, priority Priority) (*Goal, error) {
 	goal := &Goal{
 		ID:            id,
@@ -42,7 +41,6 @@ func NewGoal(id EntityID, title string, priority Priority) (*Goal, error) {
 	return goal, nil
 }
 
-// Validate checks if the goal is valid
 func (g *Goal) Validate() error {
 	if g.ID == "" {
 		return errors.New("goal ID is required")
@@ -71,9 +69,7 @@ func (g *Goal) Validate() error {
 	return nil
 }
 
-// AddLearningPath adds a learning path to the goal
 func (g *Goal) AddLearningPath(pathID EntityID) {
-	// Check if path already exists
 	for _, id := range g.LearningPaths {
 		if id == pathID {
 			return
@@ -83,7 +79,6 @@ func (g *Goal) AddLearningPath(pathID EntityID) {
 	g.Touch()
 }
 
-// RemoveLearningPath removes a learning path from the goal
 func (g *Goal) RemoveLearningPath(pathID EntityID) {
 	for i, id := range g.LearningPaths {
 		if id == pathID {
@@ -94,9 +89,7 @@ func (g *Goal) RemoveLearningPath(pathID EntityID) {
 	}
 }
 
-// AddMilestone adds a milestone to the goal
 func (g *Goal) AddMilestone(milestoneID EntityID) {
-	// Check if milestone already exists
 	for _, id := range g.Milestones {
 		if id == milestoneID {
 			return
@@ -106,7 +99,6 @@ func (g *Goal) AddMilestone(milestoneID EntityID) {
 	g.Touch()
 }
 
-// RemoveMilestone removes a milestone from the goal
 func (g *Goal) RemoveMilestone(milestoneID EntityID) {
 	for i, id := range g.Milestones {
 		if id == milestoneID {
@@ -117,14 +109,12 @@ func (g *Goal) RemoveMilestone(milestoneID EntityID) {
 	}
 }
 
-// AddTag adds a tag to the goal
 func (g *Goal) AddTag(tag string) {
 	tag = strings.ToLower(strings.TrimSpace(tag))
 	if tag == "" {
 		return
 	}
 
-	// Check if tag already exists
 	for _, t := range g.Tags {
 		if t == tag {
 			return
@@ -134,7 +124,6 @@ func (g *Goal) AddTag(tag string) {
 	g.Touch()
 }
 
-// UpdateStatus updates the goal's status
 func (g *Goal) UpdateStatus(status Status) error {
 	if !status.IsValid() {
 		return errors.New("invalid goal status")
@@ -144,7 +133,6 @@ func (g *Goal) UpdateStatus(status Status) error {
 	return nil
 }
 
-// UpdatePriority updates the goal's priority
 func (g *Goal) UpdatePriority(priority Priority) error {
 	if !priority.IsValid() {
 		return errors.New("invalid goal priority")
@@ -154,13 +142,11 @@ func (g *Goal) UpdatePriority(priority Priority) error {
 	return nil
 }
 
-// SetTargetDate sets the target completion date
 func (g *Goal) SetTargetDate(date time.Time) {
 	g.TargetDate = &date
 	g.Touch()
 }
 
-// ClearTargetDate removes the target date
 func (g *Goal) ClearTargetDate() {
 	g.TargetDate = nil
 	g.Touch()

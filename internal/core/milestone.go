@@ -42,7 +42,6 @@ func NewMilestone(id EntityID, title string, milestoneType MilestoneType, refTyp
 	return milestone, nil
 }
 
-// Validate checks if the milestone is valid
 func (m *Milestone) Validate() error {
 	if m.ID == "" {
 		return errors.New("milestone ID is required")
@@ -79,7 +78,6 @@ func (m *Milestone) Validate() error {
 	return nil
 }
 
-// Achieve marks the milestone as completed
 func (m *Milestone) Achieve(proof string) {
 	now := time.Now()
 	m.Status = StatusCompleted
@@ -108,7 +106,6 @@ func (m *Milestone) SetProof(proof string) {
 	m.Touch()
 }
 
-// IsAchieved returns true if the milestone is completed
 func (m *Milestone) IsAchieved() bool {
 	return m.Status == StatusCompleted && m.AchievedDate != nil
 }
