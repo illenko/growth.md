@@ -10,16 +10,16 @@
 This document tracks the step-by-step implementation of growth.md MVP. Each phase builds on the previous one, and tasks are marked as complete when code is written, tested, and committed.
 
 **Progress Overview**:
-- Phase 1: Project Foundation - [x] 9/10 (90%)
+- Phase 1: Project Foundation - [x] 10/10 (100%)
 - Phase 2: Core Domain Models - [x] 8/8 (100%)
-- Phase 3: Storage Layer - [ ] 0/7
+- Phase 3: Storage Layer - [~] 3/7 (43%)
 - Phase 4: CLI Framework - [ ] 0/6
 - Phase 5: Entity Commands - [ ] 0/15
 - Phase 6: Git Integration - [ ] 0/4
 - Phase 7: AI Integration - [ ] 0/5
 - Phase 8: Polish & Testing - [ ] 0/6
 
-**Total Progress**: 17/61 tasks complete (28%)
+**Total Progress**: 21/61 tasks complete (34%)
 
 ---
 
@@ -412,11 +412,11 @@ type ProgressLog struct {
 **Goal**: Implement Markdown file I/O with YAML frontmatter parsing
 
 ### 3.1 Create Frontmatter Parser
-- [ ] Create `internal/storage/frontmatter.go`
-- [ ] Implement `ParseFrontmatter(content []byte) (map[string]interface{}, string, error)`
-- [ ] Implement `SerializeFrontmatter(data interface{}) ([]byte, error)`
-- [ ] Handle edge cases (missing frontmatter, malformed YAML)
-- [ ] Write tests
+- [x] Create `internal/storage/frontmatter.go`
+- [x] Implement `ParseFrontmatter(content []byte) (map[string]interface{}, string, error)`
+- [x] Implement `SerializeFrontmatter(data interface{}) ([]byte, error)`
+- [x] Handle edge cases (missing frontmatter, malformed YAML)
+- [x] Write tests
 
 **Files to create**:
 - `internal/storage/frontmatter.go`
@@ -434,14 +434,16 @@ func SerializeFrontmatter(frontmatter interface{}, body string) ([]byte, error)
 ---
 
 ### 3.2 Create Entity Repository Interface
-- [ ] Create `internal/storage/repository.go`
-- [ ] Define `Repository[T]` interface with CRUD operations:
+- [x] Create `internal/storage/repository.go`
+- [x] Define `Repository[T]` interface with CRUD operations:
   - `Create(entity T) error`
   - `GetByID(id EntityID) (T, error)`
+  - `GetByIDWithBody(id EntityID) (T, error)`
   - `GetAll() ([]T, error)`
   - `Update(entity T) error`
   - `Delete(id EntityID) error`
   - `Search(query string) ([]T, error)`
+  - `Exists(id EntityID) (bool, error)`
 
 **Files to create**:
 - `internal/storage/repository.go`
@@ -461,12 +463,11 @@ type Repository[T any] interface {
 ---
 
 ### 3.3 Implement Filesystem Repository
-- [ ] Create `internal/storage/fs_repository.go`
-- [ ] Implement `FilesystemRepository[T]` struct
-- [ ] Implement all Repository interface methods
-- [ ] Handle file naming: `{type}-{id}-{slug}.md`
-- [ ] Add ID generation (sequential: 001, 002, etc.)
-- [ ] Write tests with temp directories
+- [x] Create `internal/storage/fs_repository.go`
+- [x] Implement `FilesystemRepository[T]` struct
+- [x] Implement all Repository interface methods (Create, GetByID, GetByIDWithBody, GetAll, Update, Delete, Search, Exists)
+- [x] Handle file naming: `{id}-{slug}.md` (e.g., "skill-001-python.md")
+- [x] Write tests with temp directories (50+ tests covering all operations)
 
 **Files to create**:
 - `internal/storage/fs_repository.go`
