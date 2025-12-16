@@ -13,13 +13,13 @@ This document tracks the step-by-step implementation of growth.md MVP. Each phas
 - Phase 1: Project Foundation - [x] 10/10 (100%)
 - Phase 2: Core Domain Models - [x] 8/8 (100%)
 - Phase 3: Storage Layer - [x] 6/7 (100% - 1 deferred)
-- Phase 4: CLI Framework - [~] 1/6 (17%)
+- Phase 4: CLI Framework - [~] 2/6 (33%)
 - Phase 5: Entity Commands - [ ] 0/15
 - Phase 6: Git Integration - [ ] 0/4
 - Phase 7: AI Integration - [ ] 0/5
 - Phase 8: Polish & Testing - [ ] 0/6
 
-**Total Progress**: 25/60 tasks complete (42% - 1 task deferred)
+**Total Progress**: 26/60 tasks complete (43% - 1 task deferred)
 
 ---
 
@@ -616,16 +616,23 @@ func init() {
 ---
 
 ### 4.2 Create Init Command
-- [ ] Create `internal/cli/init.go`
-- [ ] Implement `growth init [directory]`
-- [ ] Create directory structure
-- [ ] Initialize Git repository
-- [ ] Create default `config.yml`
-- [ ] Create initial commit
-- [ ] Add interactive prompts (name, email, AI provider)
+- [x] Create `internal/cli/init.go`
+- [x] Implement `growth init [directory]`
+- [x] Create directory structure (skills/, goals/, paths/, phases/, resources/, milestones/, progress/)
+- [x] Initialize Git repository with initial commit
+- [x] Create default `config.yml` with validation
+- [x] Create `.gitignore` and `README.md`
+- [x] Add interactive prompts (name, email, AI provider, auto-commit)
+- [x] Test: `growth init test-dir` creates full structure
 
-**Files to create**:
+**Files created**:
 - `internal/cli/init.go`
+
+**Features**:
+- Interactive configuration prompts with sensible defaults
+- Automatic Git initialization and first commit
+- Generated README with quick start guide
+- Support for multiple AI providers (openai/anthropic/google/local)
 
 **Command structure**:
 ```go
