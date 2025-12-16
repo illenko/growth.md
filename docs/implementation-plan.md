@@ -13,13 +13,13 @@ This document tracks the step-by-step implementation of growth.md MVP. Each phas
 - Phase 1: Project Foundation - [x] 10/10 (100%)
 - Phase 2: Core Domain Models - [x] 8/8 (100%)
 - Phase 3: Storage Layer - [x] 6/7 (100% - 1 deferred)
-- Phase 4: CLI Framework - [~] 2/6 (33%)
+- Phase 4: CLI Framework - [~] 3/6 (50%)
 - Phase 5: Entity Commands - [ ] 0/15
 - Phase 6: Git Integration - [ ] 0/4
 - Phase 7: AI Integration - [ ] 0/5
 - Phase 8: Polish & Testing - [ ] 0/6
 
-**Total Progress**: 26/60 tasks complete (43% - 1 task deferred)
+**Total Progress**: 27/60 tasks complete (45% - 1 task deferred)
 
 ---
 
@@ -651,15 +651,27 @@ func runInit(cmd *cobra.Command, args []string) error {
 ---
 
 ### 4.3 Create Common Output Utilities
-- [ ] Create `internal/cli/output.go`
-- [ ] Implement `PrintTable(data interface{})`
-- [ ] Implement `PrintJSON(data interface{})`
-- [ ] Implement `PrintYAML(data interface{})`
-- [ ] Implement `PrintSuccess(message string)`
-- [ ] Implement `PrintError(err error)`
+- [x] Create `internal/cli/output.go`
+- [x] Implement `PrintTable(data interface{})` - Smart table formatting with column width handling
+- [x] Implement `PrintJSON(data interface{})` - Pretty-printed JSON output
+- [x] Implement `PrintYAML(data interface{})` - YAML formatted output
+- [x] Implement `PrintSuccess(message string)` - Green checkmark success messages
+- [x] Implement `PrintError(err error)` - Red X error messages
+- [x] Add `PrintWarning`, `PrintInfo`, `Print`, `Println` utilities
+- [x] Implement `PrintOutput(data, format)` - Format-aware output dispatcher
+- [x] Write comprehensive tests (9 tests passing)
 
-**Files to create**:
+**Files created**:
 - `internal/cli/output.go`
+- `internal/cli/output_test.go`
+
+**Features**:
+- ANSI color support for success/error/warning/info messages
+- Smart table formatting with automatic column sizing
+- Handles structs, slices, and pointers
+- Truncates long values to fit columns
+- Formats time.Time as dates, slices with ellipsis
+- Respects YAML field tags for display names
 
 ---
 
