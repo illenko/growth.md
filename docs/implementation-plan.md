@@ -13,13 +13,13 @@ This document tracks the step-by-step implementation of growth.md MVP. Each phas
 - Phase 1: Project Foundation - [x] 10/10 (100%)
 - Phase 2: Core Domain Models - [x] 8/8 (100%)
 - Phase 3: Storage Layer - [x] 6/7 (100% - 1 deferred)
-- Phase 4: CLI Framework - [ ] 0/6
+- Phase 4: CLI Framework - [~] 1/6 (17%)
 - Phase 5: Entity Commands - [ ] 0/15
 - Phase 6: Git Integration - [ ] 0/4
 - Phase 7: AI Integration - [ ] 0/5
 - Phase 8: Polish & Testing - [ ] 0/6
 
-**Total Progress**: 24/60 tasks complete (40% - 1 task deferred)
+**Total Progress**: 25/60 tasks complete (42% - 1 task deferred)
 
 ---
 
@@ -569,18 +569,22 @@ type Config struct {
 **Goal**: Set up Cobra commands structure and global flags
 
 ### 4.1 Create Root Command
-- [ ] Create `internal/cli/root.go`
-- [ ] Define root command with description
-- [ ] Add global flags:
+- [x] Create `internal/cli/root.go`
+- [x] Define root command with description
+- [x] Add global flags:
   - `--config` (config file path)
   - `--repo` (growth repository path)
-  - `--format` (output format: table, json, yaml)
+  - `--format/-f` (output format: table, json, yaml)
   - `--verbose/-v` (verbose output)
-- [ ] Add PersistentPreRun to load config
-- [ ] Wire up to `cmd/growth/main.go`
+- [x] Add PersistentPreRun to load config and initialize repositories
+- [x] Wire up to `cmd/growth/main.go`
+- [x] Test: `growth --version`, `growth --help`, flags work correctly
 
-**Files to create**:
+**Files created**:
 - `internal/cli/root.go`
+
+**Files modified**:
+- `cmd/growth/main.go` (now calls `cli.Execute()`)
 
 **Example**:
 ```go
