@@ -12,14 +12,14 @@ This document tracks the step-by-step implementation of growth.md MVP. Each phas
 **Progress Overview**:
 - Phase 1: Project Foundation - [x] 10/10 (100%)
 - Phase 2: Core Domain Models - [x] 8/8 (100%)
-- Phase 3: Storage Layer - [~] 3/7 (43%)
+- Phase 3: Storage Layer - [~] 5/7 (71%)
 - Phase 4: CLI Framework - [ ] 0/6
 - Phase 5: Entity Commands - [ ] 0/15
 - Phase 6: Git Integration - [ ] 0/4
 - Phase 7: AI Integration - [ ] 0/5
 - Phase 8: Polish & Testing - [ ] 0/6
 
-**Total Progress**: 21/61 tasks complete (34%)
+**Total Progress**: 23/61 tasks complete (38%)
 
 ---
 
@@ -489,15 +489,34 @@ func (r *FilesystemRepository[T]) GetByID(id EntityID) (*T, error)
 
 ---
 
-### 3.4 Implement Skill Repository
-- [ ] Create `internal/storage/skill_repository.go`
-- [ ] Create wrapper around `FilesystemRepository[Skill]`
-- [ ] Add skill-specific queries (by category, level, status)
-- [ ] Write tests
+### 3.4 Implement Entity Repositories
+- [x] Create `internal/storage/skill_repository.go`
+- [x] Create wrapper around `FilesystemRepository[Skill]`
+- [x] Add skill-specific queries (by category, level, status)
+- [x] Create `internal/storage/goal_repository.go`
+- [x] Add goal-specific queries (by status, priority, target date range)
+- [x] Create `internal/storage/path_repository.go`
+- [x] Add path-specific queries (by type, status, AI-generated)
+- [x] Create `internal/storage/phase_repository.go`
+- [x] Add phase-specific queries (by path ID, ordered by sequence)
+- [x] Create `internal/storage/resource_repository.go`
+- [x] Add resource-specific queries (by type, skill ID, status)
+- [x] Create `internal/storage/milestone_repository.go`
+- [x] Add milestone-specific queries (by reference ID, status, type)
+- [x] Create `internal/storage/progress_repository.go`
+- [x] Add progress log queries (by date range, skill ID, resource ID)
+- [x] Write comprehensive tests for all repositories (115 tests passing)
 
-**Files to create**:
-- `internal/storage/skill_repository.go`
-- `internal/storage/skill_repository_test.go`
+**Files created**:
+- `internal/storage/skill_repository.go` + `*_test.go`
+- `internal/storage/goal_repository.go` + `*_test.go`
+- `internal/storage/path_repository.go` + `*_test.go`
+- `internal/storage/phase_repository.go` + `*_test.go`
+- `internal/storage/resource_repository.go` + `*_test.go`
+- `internal/storage/milestone_repository.go` + `*_test.go`
+- `internal/storage/progress_repository.go` + `*_test.go`
+
+**Repository Pattern**: Each repository wraps `FilesystemRepository[T]` and adds domain-specific query methods for filtering and searching entities.
 
 ---
 
