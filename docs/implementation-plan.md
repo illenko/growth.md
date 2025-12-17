@@ -13,13 +13,13 @@ This document tracks the step-by-step implementation of growth.md MVP. Each phas
 - Phase 1: Project Foundation - [x] 10/10 (100%)
 - Phase 2: Core Domain Models - [x] 8/8 (100%)
 - Phase 3: Storage Layer - [x] 6/7 (100% - 1 deferred)
-- Phase 4: CLI Framework - [~] 3/6 (50%)
+- Phase 4: CLI Framework - [x] 6/6 (100%)
 - Phase 5: Entity Commands - [ ] 0/15
 - Phase 6: Git Integration - [ ] 0/4
 - Phase 7: AI Integration - [ ] 0/5
 - Phase 8: Polish & Testing - [ ] 0/6
 
-**Total Progress**: 27/60 tasks complete (45% - 1 task deferred)
+**Total Progress**: 30/60 tasks complete (50% - 1 task deferred)
 
 ---
 
@@ -676,36 +676,78 @@ func runInit(cmd *cobra.Command, args []string) error {
 ---
 
 ### 4.4 Create Input/Prompt Utilities
-- [ ] Create `internal/cli/input.go`
-- [ ] Implement `PromptString(prompt string, defaultValue string) string`
-- [ ] Implement `PromptConfirm(prompt string) bool`
-- [ ] Implement `PromptSelect(prompt string, options []string) string`
-- [ ] Add validation helpers
+- [x] Create `internal/cli/input.go`
+- [x] Implement `PromptString(prompt string, defaultValue string) string`
+- [x] Implement `PromptStringRequired(prompt string) string` - loops until non-empty
+- [x] Implement `PromptConfirm(prompt string) bool`
+- [x] Implement `PromptConfirmDefault(prompt string, defaultYes bool) bool`
+- [x] Implement `PromptSelect(prompt string, options []string) string`
+- [x] Implement `PromptSelectWithDefault(prompt, options, default) string`
+- [x] Implement `PromptInt(prompt string, defaultValue int) int`
+- [x] Implement `PromptMultiline(prompt string) string` - for long-form text input
+- [x] Add validation helpers:
+  - `ValidateNotEmpty(value, fieldName) error`
+  - `ValidateEmail(email) error`
+  - `ValidateOneOf(value, options) error`
+  - `ValidatePositive(value, fieldName) error`
+  - `ValidateRange(value, min, max, fieldName) error`
 
-**Files to create**:
+**Files created**:
 - `internal/cli/input.go`
+
+**Features**:
+- All prompts use buffered reader from stdin
+- Support for default values with visual indicators
+- Select prompts show numbered options
+- Multiline input supports '.' terminator or Ctrl+D
+- Comprehensive validation helpers for common patterns
 
 ---
 
 ### 4.5 Create ID Generation Utilities
-- [ ] Create `internal/cli/id_gen.go`
-- [ ] Implement `GenerateNextID(entityType string) (EntityID, error)`
-- [ ] Scan existing files to find max ID
-- [ ] Zero-pad to 3 digits (001, 002, etc.)
-- [ ] Add slug generation from title
+- [x] Create `internal/cli/id_gen.go`
+- [x] Implement `GenerateNextID(entityType string) (EntityID, error)`
+- [x] Implement `GenerateNextIDInPath(entityType, basePath) (EntityID, error)` - testable version
+- [x] Scan existing files to find max ID using filepath.Glob
+- [x] Zero-pad to 3 digits (001, 002, etc.)
+- [x] Handle gaps in numbering (finds max + 1)
+- [x] Add slug generation from title: `GenerateSlug(title string) string`
+  - Lowercase and hyphenate
+  - Remove special characters
+  - Truncate to 50 chars
+  - Handle empty titles with "untitled"
+- [x] Add filename generator: `GenerateFileName(id, title) string`
+- [x] Write comprehensive tests (15 tests passing)
 
-**Files to create**:
+**Files created**:
 - `internal/cli/id_gen.go`
+- `internal/cli/id_gen_test.go`
+
+**Features**:
+- Supports all 7 entity types (skill, goal, path, phase, resource, milestone, progress)
+- Regex-based ID extraction from filenames
+- Smart slug generation with cleanup and truncation
+- Returns clear error for unknown entity types
 
 ---
 
 ### 4.6 Test CLI Framework
-- [ ] Test `growth --help` shows all commands
-- [ ] Test `growth --version` shows version
-- [ ] Test `growth init` creates structure
-- [ ] Test global flags work
+- [x] Test `growth --help` shows all commands
+- [x] Test `growth --version` shows version
+- [x] Test `growth init` creates structure
+- [x] Test global flags work
+- [x] Run all CLI package tests - 24 tests passing:
+  - 8 slug generation tests
+  - 3 filename generation tests
+  - 4 ID generation tests (including gaps, unknown types)
+  - 1 JSON output test
+  - 1 YAML output test
+  - 4 table output tests (single struct, slice, empty, Skills)
+  - 3 field formatting tests (time, slice, nil pointer)
+- [x] Build CLI binary: `go build -o bin/growth cmd/growth/main.go`
+- [x] Verify help output displays root command and init subcommand
 
-**Verification**: All basic CLI commands work
+**Verification**: All basic CLI commands work, all tests passing
 
 ---
 
