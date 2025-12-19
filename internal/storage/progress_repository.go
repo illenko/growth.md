@@ -62,14 +62,14 @@ func (r *ProgressLogRepository) FindByDateRange(start, end time.Time) ([]*core.P
 
 	var results []*core.ProgressLog
 	for _, log := range allLogs {
-		if (log.WeekOf.Equal(start) || log.WeekOf.After(start)) &&
-			(log.WeekOf.Equal(end) || log.WeekOf.Before(end)) {
+		if (log.Date.Equal(start) || log.Date.After(start)) &&
+			(log.Date.Equal(end) || log.Date.Before(end)) {
 			results = append(results, log)
 		}
 	}
 
 	sort.Slice(results, func(i, j int) bool {
-		return results[i].WeekOf.After(results[j].WeekOf)
+		return results[i].Date.After(results[j].Date)
 	})
 
 	return results, nil
@@ -82,7 +82,7 @@ func (r *ProgressLogRepository) FindRecent(limit int) ([]*core.ProgressLog, erro
 	}
 
 	sort.Slice(allLogs, func(i, j int) bool {
-		return allLogs[i].WeekOf.After(allLogs[j].WeekOf)
+		return allLogs[i].Date.After(allLogs[j].Date)
 	})
 
 	if limit > 0 && len(allLogs) > limit {
@@ -109,7 +109,7 @@ func (r *ProgressLogRepository) FindBySkillID(skillID core.EntityID) ([]*core.Pr
 	}
 
 	sort.Slice(results, func(i, j int) bool {
-		return results[i].WeekOf.After(results[j].WeekOf)
+		return results[i].Date.After(results[j].Date)
 	})
 
 	return results, nil
@@ -132,7 +132,7 @@ func (r *ProgressLogRepository) FindByResourceID(resourceID core.EntityID) ([]*c
 	}
 
 	sort.Slice(results, func(i, j int) bool {
-		return results[i].WeekOf.After(results[j].WeekOf)
+		return results[i].Date.After(results[j].Date)
 	})
 
 	return results, nil

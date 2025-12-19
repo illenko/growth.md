@@ -162,22 +162,22 @@ func runStats(cmd *cobra.Command, args []string) error {
 
 		for _, log := range progressLogs {
 			totalProgressHours += log.HoursInvested
-			if log.WeekOf.After(fourWeeksAgo) {
+			if log.Date.After(fourWeeksAgo) {
 				recentWeeks++
 				recentHours += log.HoursInvested
 			}
 		}
 
 		fmt.Printf("Progress Tracking:\n")
-		fmt.Printf("  Total weeks logged: %d\n", len(progressLogs))
+		fmt.Printf("  Total logs: %d\n", len(progressLogs))
 		fmt.Printf("  Total hours invested: %.1f\n", totalProgressHours)
 		if len(progressLogs) > 0 {
 			avgHours := totalProgressHours / float64(len(progressLogs))
-			fmt.Printf("  Average per week: %.1f hours\n", avgHours)
+			fmt.Printf("  Average per log: %.1f hours\n", avgHours)
 		}
 		if recentWeeks > 0 {
 			avgRecentHours := recentHours / float64(recentWeeks)
-			fmt.Printf("  Recent (last 4 weeks): %.1f hours/week\n", avgRecentHours)
+			fmt.Printf("  Recent (last 4 weeks): %.1f hours/log\n", avgRecentHours)
 		}
 		fmt.Println()
 	}

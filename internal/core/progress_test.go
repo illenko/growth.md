@@ -9,16 +9,16 @@ import (
 )
 
 func TestNewProgressLog(t *testing.T) {
-	weekDate := time.Date(2025, 3, 19, 0, 0, 0, 0, time.UTC) // Wednesday
+	date := time.Date(2025, 3, 19, 14, 30, 0, 0, time.UTC) // March 19 at 2:30 PM
 
 	t.Run("creates valid progress log", func(t *testing.T) {
-		log, err := NewProgressLog("progress-001", weekDate)
+		log, err := NewProgressLog("progress-001", date)
 
 		require.NoError(t, err)
 		assert.Equal(t, EntityID("progress-001"), log.ID)
-		// Should normalize to Monday of that week
-		expectedMonday := time.Date(2025, 3, 17, 0, 0, 0, 0, time.UTC)
-		assert.Equal(t, expectedMonday, log.WeekOf)
+		// Should normalize to midnight of the same date
+		expectedDate := time.Date(2025, 3, 19, 0, 0, 0, 0, time.UTC)
+		assert.Equal(t, expectedDate, log.Date)
 		assert.Equal(t, 0.0, log.HoursInvested)
 		assert.Empty(t, log.SkillsWorked)
 		assert.Empty(t, log.ResourcesUsed)
@@ -28,7 +28,7 @@ func TestNewProgressLog(t *testing.T) {
 	})
 
 	t.Run("fails with empty ID", func(t *testing.T) {
-		_, err := NewProgressLog("", weekDate)
+		_, err := NewProgressLog("", date)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "ID is required")
 	})
@@ -36,7 +36,7 @@ func TestNewProgressLog(t *testing.T) {
 	t.Run("fails with zero time", func(t *testing.T) {
 		_, err := NewProgressLog("progress-001", time.Time{})
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "weekOf is required")
+		assert.Contains(t, err.Error(), "date is required")
 	})
 }
 
@@ -51,7 +51,7 @@ func TestProgressLog_Validate(t *testing.T) {
 			name: "valid progress log",
 			log: &ProgressLog{
 				ID:            "progress-001",
-				WeekOf:        time.Date(2025, 3, 17, 0, 0, 0, 0, time.UTC),
+				Date:          time.Date(2025, 3, 17, 0, 0, 0, 0, time.UTC),
 				HoursInvested: 10.5,
 				Timestamps:    NewTimestamps(),
 			},
@@ -60,26 +60,26 @@ func TestProgressLog_Validate(t *testing.T) {
 		{
 			name: "missing ID",
 			log: &ProgressLog{
-				WeekOf:     time.Date(2025, 3, 17, 0, 0, 0, 0, time.UTC),
+				Date:       time.Date(2025, 3, 17, 0, 0, 0, 0, time.UTC),
 				Timestamps: NewTimestamps(),
 			},
 			wantErr: true,
 			errMsg:  "ID is required",
 		},
 		{
-			name: "zero weekOf",
+			name: "zero date",
 			log: &ProgressLog{
 				ID:         "progress-001",
 				Timestamps: NewTimestamps(),
 			},
 			wantErr: true,
-			errMsg:  "weekOf is required",
+			errMsg:  "date is required",
 		},
 		{
 			name: "negative hours invested",
 			log: &ProgressLog{
 				ID:            "progress-001",
-				WeekOf:        time.Date(2025, 3, 17, 0, 0, 0, 0, time.UTC),
+				Date:          time.Date(2025, 3, 17, 0, 0, 0, 0, time.UTC),
 				HoursInvested: -5,
 				Timestamps:    NewTimestamps(),
 			},
@@ -194,55 +194,4 @@ func TestProgressLog_SetMood(t *testing.T) {
 	log.SetMood("motivated")
 
 	assert.Equal(t, "motivated", log.Mood)
-}
-
-func TestGetStartOfWeek(t *testing.T) {
-	tests := []struct {
-		name     string
-		input    time.Time
-		expected time.Time
-	}{
-		{
-			name:     "Monday stays Monday",
-			input:    time.Date(2025, 3, 17, 10, 30, 0, 0, time.UTC),
-			expected: time.Date(2025, 3, 17, 0, 0, 0, 0, time.UTC),
-		},
-		{
-			name:     "Wednesday goes to Monday",
-			input:    time.Date(2025, 3, 19, 15, 45, 0, 0, time.UTC),
-			expected: time.Date(2025, 3, 17, 0, 0, 0, 0, time.UTC),
-		},
-		{
-			name:     "Friday goes to Monday",
-			input:    time.Date(2025, 3, 21, 9, 0, 0, 0, time.UTC),
-			expected: time.Date(2025, 3, 17, 0, 0, 0, 0, time.UTC),
-		},
-		{
-			name:     "Saturday goes to Monday",
-			input:    time.Date(2025, 3, 22, 12, 0, 0, 0, time.UTC),
-			expected: time.Date(2025, 3, 17, 0, 0, 0, 0, time.UTC),
-		},
-		{
-			name:     "Sunday goes to Monday",
-			input:    time.Date(2025, 3, 23, 18, 0, 0, 0, time.UTC),
-			expected: time.Date(2025, 3, 17, 0, 0, 0, 0, time.UTC),
-		},
-		{
-			name:     "Tuesday goes to Monday",
-			input:    time.Date(2025, 3, 18, 8, 15, 0, 0, time.UTC),
-			expected: time.Date(2025, 3, 17, 0, 0, 0, 0, time.UTC),
-		},
-		{
-			name:     "Thursday goes to Monday",
-			input:    time.Date(2025, 3, 20, 14, 30, 0, 0, time.UTC),
-			expected: time.Date(2025, 3, 17, 0, 0, 0, 0, time.UTC),
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := getStartOfWeek(tt.input)
-			assert.Equal(t, tt.expected, result)
-		})
-	}
 }

@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	progressWeek   string
+	progressDate   string
 	progressHours  string
 	progressMood   string
 	progressSkills string
@@ -20,18 +20,18 @@ var (
 var progressCmd = &cobra.Command{
 	Use:   "progress",
 	Short: "Manage progress logs",
-	Long:  `Log weekly progress and view progress history.`,
+	Long:  `Log daily progress and view progress history.`,
 }
 
 var progressLogCmd = &cobra.Command{
 	Use:   "log",
-	Short: "Log progress for current week",
-	Long: `Create or update a progress log for the current week.
+	Short: "Log progress for a date",
+	Long: `Create a progress log for a specific date.
 
 Examples:
   growth progress log
   growth progress log --hours 15 --mood motivated
-  growth progress log --week 2025-12-16`,
+  growth progress log --date 2025-12-16`,
 	RunE: runProgressLog,
 }
 
@@ -65,23 +65,23 @@ func init() {
 	progressCmd.AddCommand(progressListCmd)
 	progressCmd.AddCommand(progressViewCmd)
 
-	progressLogCmd.Flags().StringVar(&progressWeek, "week", "", "week start date (YYYY-MM-DD), defaults to current week")
+	progressLogCmd.Flags().StringVar(&progressDate, "date", "", "date for progress log (YYYY-MM-DD), defaults to today")
 	progressLogCmd.Flags().StringVar(&progressHours, "hours", "", "hours invested")
 	progressLogCmd.Flags().StringVar(&progressMood, "mood", "", "mood (e.g., motivated, frustrated, focused)")
 	progressLogCmd.Flags().StringVar(&progressSkills, "skills", "", "comma-separated skill IDs")
 }
 
 func runProgressLog(cmd *cobra.Command, args []string) error {
-	var weekOf time.Time
+	var date time.Time
 	var err error
 
-	if progressWeek != "" {
-		weekOf, err = time.Parse("2006-01-02", progressWeek)
+	if progressDate != "" {
+		date, err = time.Parse("2006-01-02", progressDate)
 		if err != nil {
-			return fmt.Errorf("invalid week date format (use YYYY-MM-DD): %w", err)
+			return fmt.Errorf("invalid date format (use YYYY-MM-DD): %w", err)
 		}
 	} else {
-		weekOf = time.Now()
+		date = time.Now()
 	}
 
 	id, err := GenerateNextID("progress")
@@ -89,7 +89,7 @@ func runProgressLog(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to generate progress ID: %w", err)
 	}
 
-	log, err := core.NewProgressLog(id, weekOf)
+	log, err := core.NewProgressLog(id, date)
 	if err != nil {
 		return fmt.Errorf("failed to create progress log: %w", err)
 	}
@@ -103,7 +103,7 @@ func runProgressLog(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("failed to set hours: %w", err)
 		}
 	} else {
-		hours := PromptInt("Hours invested this week", 0)
+		hours := PromptInt("Hours invested", 0)
 		if hours > 0 {
 			if err := log.SetHoursInvested(float64(hours)); err != nil {
 				return fmt.Errorf("failed to set hours: %w", err)
@@ -128,7 +128,7 @@ func runProgressLog(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	summary := PromptMultiline("Weekly summary (press Ctrl+D or enter '.' to finish)")
+	summary := PromptMultiline("Daily summary (press Ctrl+D or enter '.' to finish)")
 	if summary != "" {
 		log.Body = summary
 	}
@@ -137,12 +137,12 @@ func runProgressLog(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to save progress log: %w", err)
 	}
 
-	PrintSuccess(fmt.Sprintf("Logged progress %s for week of %s", log.ID, log.WeekOf.Format("2006-01-02")))
+	PrintSuccess(fmt.Sprintf("Logged progress %s for %s", log.ID, log.Date.Format("2006-01-02")))
 
 	if verbose {
 		fmt.Printf("\nProgress log details:\n")
 		fmt.Printf("  ID: %s\n", log.ID)
-		fmt.Printf("  Week: %s\n", log.WeekOf.Format("2006-01-02"))
+		fmt.Printf("  Date: %s\n", log.Date.Format("2006-01-02"))
 		if log.HoursInvested > 0 {
 			fmt.Printf("  Hours: %.1f\n", log.HoursInvested)
 		}
@@ -181,7 +181,7 @@ func runProgressView(cmd *cobra.Command, args []string) error {
 
 	if config.Display.OutputFormat == "table" {
 		fmt.Printf("ID:       %s\n", log.ID)
-		fmt.Printf("Week:     %s\n", log.WeekOf.Format("2006-01-02"))
+		fmt.Printf("Date:     %s\n", log.Date.Format("2006-01-02"))
 		if log.HoursInvested > 0 {
 			fmt.Printf("Hours:    %.1f\n", log.HoursInvested)
 		}

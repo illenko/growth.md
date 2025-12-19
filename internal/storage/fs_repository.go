@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/illenko/growth.md/internal/core"
 	"gopkg.in/yaml.v3"
@@ -335,17 +336,24 @@ func (r *FilesystemRepository[T]) getEntityID(entity *T) (core.EntityID, error) 
 
 func (r *FilesystemRepository[T]) getEntityTitle(entity *T) string {
 	v := reflect.ValueOf(entity).Elem()
+
+	// First try Title field
 	titleField := v.FieldByName("Title")
-	if !titleField.IsValid() {
-		return ""
+	if titleField.IsValid() {
+		if title, ok := titleField.Interface().(string); ok && title != "" {
+			return title
+		}
 	}
 
-	title, ok := titleField.Interface().(string)
-	if !ok {
-		return ""
+	// Fallback to Date field for entities like ProgressLog
+	dateField := v.FieldByName("Date")
+	if dateField.IsValid() {
+		if date, ok := dateField.Interface().(time.Time); ok && !date.IsZero() {
+			return date.Format("2006-01-02")
+		}
 	}
 
-	return title
+	return ""
 }
 
 func (r *FilesystemRepository[T]) getEntityBody(entity *T) string {

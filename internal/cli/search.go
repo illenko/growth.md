@@ -106,7 +106,7 @@ func runSearch(cmd *cobra.Command, args []string) error {
 	if err == nil && len(progressLogs) > 0 {
 		fmt.Printf("Progress Logs (%d):\n", len(progressLogs))
 		for _, log := range progressLogs {
-			fmt.Printf("  %s - Week of %s (%.1f hours)\n", log.ID, log.WeekOf.Format("2006-01-02"), log.HoursInvested)
+			fmt.Printf("  %s - %s (%.1f hours)\n", log.ID, log.Date.Format("2006-01-02"), log.HoursInvested)
 		}
 		fmt.Println()
 		hasResults = true

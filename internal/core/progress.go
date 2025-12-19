@@ -8,7 +8,7 @@ import (
 // ProgressLog represents a time-based journal entry
 type ProgressLog struct {
 	ID                 EntityID   `yaml:"id"`
-	WeekOf             time.Time  `yaml:"weekOf"` // Start of week (Monday)
+	Date               time.Time  `yaml:"date"`
 	HoursInvested      float64    `yaml:"hoursInvested,omitempty"`
 	SkillsWorked       []EntityID `yaml:"skillsWorked,omitempty"`
 	ResourcesUsed      []EntityID `yaml:"resourcesUsed,omitempty"`
@@ -17,18 +17,18 @@ type ProgressLog struct {
 	Timestamps
 
 	// Body contains the markdown content (summary, accomplishments, challenges,
-	// time breakdown, what I learned, next week plan, reflections, energy level)
+	// time breakdown, what I learned, reflections, energy level)
 	Body string `yaml:"-"`
 }
 
-// NewProgressLog creates a new Progress Log for a given week
-func NewProgressLog(id EntityID, weekOf time.Time) (*ProgressLog, error) {
-	// Normalize to start of week (Monday)
-	weekStart := getStartOfWeek(weekOf)
+// NewProgressLog creates a new Progress Log for a given date
+func NewProgressLog(id EntityID, date time.Time) (*ProgressLog, error) {
+	// Normalize to midnight
+	dateNormalized := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, date.Location())
 
 	log := &ProgressLog{
 		ID:                 id,
-		WeekOf:             weekStart,
+		Date:               dateNormalized,
 		SkillsWorked:       []EntityID{},
 		ResourcesUsed:      []EntityID{},
 		MilestonesAchieved: []EntityID{},
@@ -47,12 +47,12 @@ func (p *ProgressLog) Validate() error {
 		return errors.New("progress log ID is required")
 	}
 
-	if p.WeekOf.IsZero() {
-		return errors.New("progress log weekOf is required")
+	if p.Date.IsZero() {
+		return errors.New("progress log date is required")
 	}
 
 	if p.HoursInvested < 0 {
-		return errors.New("progress log hoursInvested cannot be negative")
+		return errors.New("progress log hours invested cannot be negative")
 	}
 
 	if p.Created.IsZero() {
@@ -113,22 +113,4 @@ func (p *ProgressLog) SetHoursInvested(hours float64) error {
 func (p *ProgressLog) SetMood(mood string) {
 	p.Mood = mood
 	p.Touch()
-}
-
-// getStartOfWeek returns the Monday of the week containing the given date
-func getStartOfWeek(date time.Time) time.Time {
-	// Get to midnight
-	date = time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, date.Location())
-
-	// Calculate days until Monday
-	weekday := date.Weekday()
-	if weekday == time.Sunday {
-		weekday = 7 // Treat Sunday as day 7
-	}
-	daysUntilMonday := int(time.Monday - weekday)
-	if daysUntilMonday > 0 {
-		daysUntilMonday -= 7
-	}
-
-	return date.AddDate(0, 0, daysUntilMonday)
 }
