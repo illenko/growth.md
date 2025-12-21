@@ -136,5 +136,14 @@ func initializeRepositories() error {
 		return fmt.Errorf("failed to initialize progress repository: %w", err)
 	}
 
+	// Set config on all repositories for git integration
+	skillRepo.SetConfig(config)
+	goalRepo.SetConfig(config)
+	pathRepo.SetConfig(config)
+	phaseRepo.SetConfig(config)
+	resourceRepo.SetConfig(config)
+	milestoneRepo.SetConfig(config)
+	progressRepo.SetConfig(config)
+
 	return nil
 }

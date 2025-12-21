@@ -19,6 +19,13 @@ func NewPathRepository(basePath string) (*PathRepository, error) {
 	}, nil
 }
 
+// SetConfig sets the configuration for git auto-commit.
+func (r *PathRepository) SetConfig(config *Config) {
+	if fsRepo, ok := r.repo.(*FilesystemRepository[core.LearningPath]); ok {
+		fsRepo.SetConfig(config)
+	}
+}
+
 func (r *PathRepository) Create(path *core.LearningPath) error {
 	return r.repo.Create(path)
 }

@@ -19,6 +19,13 @@ func NewResourceRepository(basePath string) (*ResourceRepository, error) {
 	}, nil
 }
 
+// SetConfig sets the configuration for git auto-commit.
+func (r *ResourceRepository) SetConfig(config *Config) {
+	if fsRepo, ok := r.repo.(*FilesystemRepository[core.Resource]); ok {
+		fsRepo.SetConfig(config)
+	}
+}
+
 func (r *ResourceRepository) Create(resource *core.Resource) error {
 	return r.repo.Create(resource)
 }

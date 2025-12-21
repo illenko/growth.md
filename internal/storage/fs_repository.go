@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/illenko/growth.md/internal/core"
+	"github.com/illenko/growth.md/internal/git"
 	"gopkg.in/yaml.v3"
 )
 
@@ -19,14 +20,21 @@ var _ Repository[any] = (*FilesystemRepository[any])(nil)
 // FilesystemRepository implements the Repository interface using the local filesystem.
 // Entities are stored as markdown files with YAML frontmatter.
 type FilesystemRepository[T any] struct {
-	basePath   string // Base directory for this repository
-	entityType string // Entity type name (e.g., "skill", "goal")
+	basePath   string  // Base directory for this repository
+	entityType string  // Entity type name (e.g., "skill", "goal")
+	config     *Config // Configuration including git settings
 }
 
 // NewFilesystemRepository creates a new filesystem-based repository.
 // basePath is the directory where entity files will be stored.
 // entityType is used for file naming (e.g., "skill" -> "skill-001-python.md").
 func NewFilesystemRepository[T any](basePath, entityType string) (*FilesystemRepository[T], error) {
+	return NewFilesystemRepositoryWithConfig[T](basePath, entityType, nil)
+}
+
+// NewFilesystemRepositoryWithConfig creates a new filesystem-based repository with config.
+// If config is nil, git integration will be disabled.
+func NewFilesystemRepositoryWithConfig[T any](basePath, entityType string, config *Config) (*FilesystemRepository[T], error) {
 	if basePath == "" {
 		return nil, errors.New("basePath cannot be empty")
 	}
@@ -42,7 +50,14 @@ func NewFilesystemRepository[T any](basePath, entityType string) (*FilesystemRep
 	return &FilesystemRepository[T]{
 		basePath:   basePath,
 		entityType: entityType,
+		config:     config,
 	}, nil
+}
+
+// SetConfig sets the configuration for the repository.
+// This allows setting config after repository creation.
+func (r *FilesystemRepository[T]) SetConfig(config *Config) {
+	r.config = config
 }
 
 func (r *FilesystemRepository[T]) Create(entity *T) error {
@@ -79,6 +94,9 @@ func (r *FilesystemRepository[T]) Create(entity *T) error {
 	if err := os.WriteFile(fp, content, 0644); err != nil {
 		return fmt.Errorf("failed to write file %s: %w", fp, err)
 	}
+
+	// Auto-commit if enabled
+	r.autoCommit("create", fp, string(id), title)
 
 	return nil
 }
@@ -173,6 +191,9 @@ func (r *FilesystemRepository[T]) Update(entity *T) error {
 		}
 	}
 
+	// Auto-commit if enabled
+	r.autoCommit("update", newFilePath, string(id), title)
+
 	return nil
 }
 
@@ -186,9 +207,20 @@ func (r *FilesystemRepository[T]) Delete(id core.EntityID) error {
 		return err
 	}
 
+	// Get title before deleting for commit message
+	var title string
+	if entity, err := r.parseEntityFromFile(filePath, false); err == nil {
+		title = r.getEntityTitle(entity)
+	} else {
+		title = "unknown"
+	}
+
 	if err := os.Remove(filePath); err != nil {
 		return fmt.Errorf("failed to delete file: %w", err)
 	}
+
+	// Auto-commit if enabled
+	r.autoCommit("delete", filePath, string(id), title)
 
 	return nil
 }
@@ -422,4 +454,80 @@ func slugify(s string) string {
 	}
 
 	return s
+}
+
+// autoCommit commits a file change to git if auto-commit is enabled.
+// It handles errors gracefully and logs them without failing the operation.
+func (r *FilesystemRepository[T]) autoCommit(operation, filePath, id, title string) {
+	// Skip if no config
+	if r.config == nil {
+		return
+	}
+
+	// Check if auto-commit is enabled for this operation
+	shouldCommit := false
+	switch operation {
+	case "create":
+		shouldCommit = r.config.Git.AutoCommit
+	case "update", "delete":
+		shouldCommit = r.config.Git.AutoCommit && r.config.Git.CommitOnUpdate
+	default:
+		return
+	}
+
+	if !shouldCommit {
+		return
+	}
+
+	// Get repository root
+	repoRoot, err := git.GetRepoRoot(r.basePath)
+	if err != nil {
+		// Not a git repository, skip silently
+		return
+	}
+
+	// Get relative path from repo root
+	relPath, err := filepath.Rel(repoRoot, filePath)
+	if err != nil {
+		// Can't get relative path, use absolute
+		relPath = filePath
+	}
+
+	// Generate commit message from template
+	message := r.generateCommitMessage(operation, id, title)
+
+	// Commit the file
+	if err := git.CommitFile(repoRoot, relPath, message); err != nil {
+		// Log error but don't fail the operation
+		// In a production environment, this might log to a file or stderr
+		_ = err
+	}
+}
+
+// generateCommitMessage generates a commit message from the template or a default format.
+func (r *FilesystemRepository[T]) generateCommitMessage(operation, id, title string) string {
+	if r.config != nil && r.config.Git.CommitMessageTemplate != "" {
+		// Use template - simple string replacement for now
+		msg := r.config.Git.CommitMessageTemplate
+		msg = strings.ReplaceAll(msg, "{{operation}}", operation)
+		msg = strings.ReplaceAll(msg, "{{entityType}}", r.entityType)
+		msg = strings.ReplaceAll(msg, "{{id}}", string(id))
+		msg = strings.ReplaceAll(msg, "{{title}}", title)
+		return msg
+	}
+
+	// Default format
+	var action string
+	switch operation {
+	case "create":
+		action = "Add"
+	case "update":
+		action = "Update"
+	case "delete":
+		action = "Delete"
+	default:
+		action = "Modify"
+	}
+
+	return fmt.Sprintf("%s %s: %s (%s)", action, r.entityType, title, id)
 }

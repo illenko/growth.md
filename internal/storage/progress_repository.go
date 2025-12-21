@@ -22,6 +22,13 @@ func NewProgressLogRepository(basePath string) (*ProgressLogRepository, error) {
 	}, nil
 }
 
+// SetConfig sets the configuration for git auto-commit.
+func (r *ProgressLogRepository) SetConfig(config *Config) {
+	if fsRepo, ok := r.repo.(*FilesystemRepository[core.ProgressLog]); ok {
+		fsRepo.SetConfig(config)
+	}
+}
+
 func (r *ProgressLogRepository) Create(log *core.ProgressLog) error {
 	return r.repo.Create(log)
 }

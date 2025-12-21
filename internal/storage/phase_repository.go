@@ -21,6 +21,13 @@ func NewPhaseRepository(basePath string) (*PhaseRepository, error) {
 	}, nil
 }
 
+// SetConfig sets the configuration for git auto-commit.
+func (r *PhaseRepository) SetConfig(config *Config) {
+	if fsRepo, ok := r.repo.(*FilesystemRepository[core.Phase]); ok {
+		fsRepo.SetConfig(config)
+	}
+}
+
 func (r *PhaseRepository) Create(phase *core.Phase) error {
 	return r.repo.Create(phase)
 }

@@ -19,6 +19,13 @@ func NewSkillRepository(basePath string) (*SkillRepository, error) {
 	}, nil
 }
 
+// SetConfig sets the configuration for git auto-commit.
+func (r *SkillRepository) SetConfig(config *Config) {
+	if fsRepo, ok := r.repo.(*FilesystemRepository[core.Skill]); ok {
+		fsRepo.SetConfig(config)
+	}
+}
+
 func (r *SkillRepository) Create(skill *core.Skill) error {
 	return r.repo.Create(skill)
 }

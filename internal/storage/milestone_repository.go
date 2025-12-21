@@ -19,6 +19,13 @@ func NewMilestoneRepository(basePath string) (*MilestoneRepository, error) {
 	}, nil
 }
 
+// SetConfig sets the configuration for git auto-commit.
+func (r *MilestoneRepository) SetConfig(config *Config) {
+	if fsRepo, ok := r.repo.(*FilesystemRepository[core.Milestone]); ok {
+		fsRepo.SetConfig(config)
+	}
+}
+
 func (r *MilestoneRepository) Create(milestone *core.Milestone) error {
 	return r.repo.Create(milestone)
 }

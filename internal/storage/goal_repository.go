@@ -21,6 +21,13 @@ func NewGoalRepository(basePath string) (*GoalRepository, error) {
 	}, nil
 }
 
+// SetConfig sets the configuration for git auto-commit.
+func (r *GoalRepository) SetConfig(config *Config) {
+	if fsRepo, ok := r.repo.(*FilesystemRepository[core.Goal]); ok {
+		fsRepo.SetConfig(config)
+	}
+}
+
 func (r *GoalRepository) Create(goal *core.Goal) error {
 	return r.repo.Create(goal)
 }
