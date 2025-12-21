@@ -14,12 +14,12 @@ This document tracks the step-by-step implementation of growth.md MVP. Each phas
 - Phase 2: Core Domain Models - [x] 8/8 (100%)
 - Phase 3: Storage Layer - [x] 6/7 (100% - 1 deferred)
 - Phase 4: CLI Framework - [x] 6/6 (100%)
-- Phase 5: Entity Commands - [ ] 0/15
+- Phase 5: Entity Commands - [x] 15/15 (100%)
 - Phase 6: Git Integration - [ ] 0/4
 - Phase 7: AI Integration - [ ] 0/5
 - Phase 8: Polish & Testing - [ ] 0/6
 
-**Total Progress**: 30/60 tasks complete (50% - 1 task deferred)
+**Total Progress**: 45/60 tasks complete (75% - 1 task deferred)
 
 ---
 
@@ -384,11 +384,12 @@ type Phase struct {
 ### 2.8 Create Progress Log Entity
 - [x] Create `internal/core/progress.go`
 - [x] Define `ProgressLog` struct
-- [x] Add helper for getting week-of date
+- [x] Add date normalization (to midnight)
 - [x] Add validation and constructor
 - [x] Write tests
+- [x] **REFACTORED**: Changed from week-based to date-based tracking
 
-**Files to create**:
+**Files created**:
 - `internal/core/progress.go`
 - `internal/core/progress_test.go`
 
@@ -396,14 +397,22 @@ type Phase struct {
 ```go
 type ProgressLog struct {
     ID                 EntityID   `yaml:"id"`
-    WeekOf             time.Time  `yaml:"weekOf"`
+    Date               time.Time  `yaml:"date"`
     HoursInvested      float64    `yaml:"hoursInvested,omitempty"`
-    SkillsWorked       []EntityID `yaml:"skillsWorked"`
-    ResourcesUsed      []EntityID `yaml:"resourcesUsed"`
-    MilestonesAchieved []EntityID `yaml:"milestonesAchieved"`
+    SkillsWorked       []EntityID `yaml:"skillsWorked,omitempty"`
+    ResourcesUsed      []EntityID `yaml:"resourcesUsed,omitempty"`
+    MilestonesAchieved []EntityID `yaml:"milestonesAchieved,omitempty"`
     Mood               string     `yaml:"mood,omitempty"`
+    Timestamps
+    Body               string     `yaml:"-"` // Markdown content
 }
 ```
+
+**Key changes**:
+- Replaced `WeekOf` field with `Date` field for daily tracking
+- Removed `getStartOfWeek()` helper function
+- Added date normalization to midnight in constructor
+- Changed terminology from "weekly" to "daily" throughout
 
 ---
 
@@ -756,14 +765,14 @@ func runInit(cmd *cobra.Command, args []string) error {
 **Goal**: Implement CRUD commands for all entities
 
 ### 5.1 Skill Commands - Create
-- [ ] Create `internal/cli/skill.go`
-- [ ] Implement `growth skill create <title> [flags]`
-- [ ] Flags: `--category`, `--level`, `--tags`
-- [ ] Generate ID and slug
-- [ ] Create markdown file with frontmatter
-- [ ] Print success message with ID
+- [x] Create `internal/cli/skill.go`
+- [x] Implement `growth skill create <title> [flags]`
+- [x] Flags: `--category`, `--level`, `--tags`
+- [x] Generate ID and slug automatically
+- [x] Create markdown file with YAML frontmatter
+- [x] Print success message with ID
 
-**Files to create**:
+**Files created**:
 - `internal/cli/skill.go`
 
 **Command**:
@@ -774,99 +783,135 @@ growth skill create "Python" --category programming --level intermediate --tags 
 ---
 
 ### 5.2 Skill Commands - List & View
-- [ ] Implement `growth skill list [flags]`
-- [ ] Flags: `--category`, `--level`, `--status`
-- [ ] Display as table by default
-- [ ] Implement `growth skill view <id-or-slug>`
-- [ ] Show full details in formatted output
+- [x] Implement `growth skill list [flags]`
+- [x] Flags: `--category`, `--level`, `--status`
+- [x] Display as table by default
+- [x] Support `--format` for JSON/YAML output
+- [x] Implement `growth skill view <id>`
+- [x] Show full details in formatted output
 
 **Commands**:
 ```bash
 growth skill list --category ml
-growth skill view python
+growth skill list --level advanced --status learning
+growth skill view skill-001
 ```
 
 ---
 
 ### 5.3 Skill Commands - Edit & Delete
-- [ ] Implement `growth skill edit <id> [flags]`
-- [ ] Allow updating level, status, tags
-- [ ] Update `updated` timestamp
-- [ ] Implement `growth skill delete <id>`
-- [ ] Prompt for confirmation
-- [ ] Check for references before deleting
+- [x] Implement `growth skill edit <id> [flags]`
+- [x] Allow updating level, status, tags, category
+- [x] Update `updated` timestamp automatically
+- [x] Implement `growth skill delete <id>`
+- [x] Prompt for confirmation
+- [x] Delete markdown file
 
 **Commands**:
 ```bash
-growth skill edit python --level advanced
+growth skill edit skill-001 --level advanced
 growth skill delete skill-005
 ```
 
 ---
 
 ### 5.4 Goal Commands - Full CRUD
-- [ ] Create `internal/cli/goal.go`
-- [ ] Implement `growth goal create <title> [flags]`
-- [ ] Flags: `--priority`, `--target-date`
-- [ ] Implement `growth goal list [flags]`
-- [ ] Implement `growth goal view <id>`
-- [ ] Implement `growth goal edit <id> [flags]`
-- [ ] Implement `growth goal delete <id>`
+- [x] Create `internal/cli/goal.go`
+- [x] Implement `growth goal create <title> [flags]`
+- [x] Flags: `--priority`, `--target-date`
+- [x] Implement `growth goal list [flags]`
+- [x] Flags: `--status`, `--priority`
+- [x] Implement `growth goal view <id>`
+- [x] Implement `growth goal edit <id> [flags]`
+- [x] Implement `growth goal delete <id>`
 
-**Files to create**:
+**Files created**:
 - `internal/cli/goal.go`
+
+**Commands**:
+```bash
+growth goal create "Become ML Engineer" --priority high --target-date 2026-12-31
+growth goal list --status active
+growth goal view goal-001
+growth goal edit goal-001 --priority medium
+growth goal delete goal-005
+```
 
 ---
 
 ### 5.5 Goal Commands - Path Management
-- [ ] Implement `growth goal add-path <goal-id> <path-id>`
-- [ ] Implement `growth goal remove-path <goal-id> <path-id>`
-- [ ] Update goal file frontmatter
-- [ ] Validate path exists
+- [x] Implement `growth goal add-path <goal-id> <path-id>`
+- [x] Implement `growth goal remove-path <goal-id> <path-id>`
+- [x] Update goal file frontmatter
+- [x] Validate path exists
+- [x] Add skills to goals with `add-skill` and `remove-skill` commands
 
 **Commands**:
 ```bash
 growth goal add-path goal-001 path-001
 growth goal remove-path goal-001 path-002
+growth goal add-skill goal-001 skill-003
+growth goal remove-skill goal-001 skill-005
 ```
 
 ---
 
 ### 5.6 Path Commands - Basic CRUD
-- [ ] Create `internal/cli/path.go`
-- [ ] Implement `growth path list [flags]`
-- [ ] Implement `growth path view <id>`
-- [ ] Implement `growth path edit <id>`
-- [ ] Implement `growth path delete <id>`
+- [x] Create `internal/cli/path.go`
+- [x] Implement `growth path create <title> [flags]`
+- [x] Flags: `--type`, `--status`
+- [x] Implement `growth path list [flags]`
+- [x] Flags: `--type`, `--status`
+- [x] Implement `growth path view <id>`
+- [x] Implement `growth path edit <id>`
+- [x] Implement `growth path delete <id>`
 
-**Files to create**:
+**Files created**:
 - `internal/cli/path.go`
 
 **Note**: Path generation (AI) will be in Phase 7
 
+**Commands**:
+```bash
+growth path create "ML Engineering Path" --type manual
+growth path list --type ai-generated
+growth path view path-001
+growth path edit path-001 --status active
+growth path delete path-005
+```
+
 ---
 
 ### 5.7 Resource Commands - Full CRUD
-- [ ] Create `internal/cli/resource.go`
-- [ ] Implement `growth resource create <title> --skill <id> --type <type> [flags]`
-- [ ] Flags: `--url`, `--author`, `--estimated-hours`
-- [ ] Implement `growth resource list [flags]`
-- [ ] Filter by skill, type, status
-- [ ] Implement `growth resource view <id>`
-- [ ] Implement `growth resource edit <id>`
-- [ ] Implement `growth resource delete <id>`
+- [x] Create `internal/cli/resource.go`
+- [x] Implement `growth resource create <title> --skill <id> --type <type> [flags]`
+- [x] Flags: `--url`, `--author`, `--estimated-hours`
+- [x] Implement `growth resource list [flags]`
+- [x] Filter by skill, type, status
+- [x] Implement `growth resource view <id>`
+- [x] Implement `growth resource edit <id>`
+- [x] Implement `growth resource delete <id>`
 
-**Files to create**:
+**Files created**:
 - `internal/cli/resource.go`
+
+**Commands**:
+```bash
+growth resource create "Fast.ai Course" --skill skill-001 --type course --url https://fast.ai --estimated-hours 40
+growth resource list --skill skill-001 --status in-progress
+growth resource view resource-001
+growth resource edit resource-001 --estimated-hours 50
+growth resource delete resource-005
+```
 
 ---
 
 ### 5.8 Resource Commands - Status Updates
-- [ ] Implement `growth resource start <id>`
-- [ ] Update status to `in-progress`
-- [ ] Implement `growth resource complete <id>`
-- [ ] Update status to `completed`
-- [ ] Add timestamp tracking
+- [x] Implement `growth resource start <id>`
+- [x] Update status to `in-progress`
+- [x] Implement `growth resource complete <id>`
+- [x] Update status to `completed`
+- [x] Automatic timestamp tracking
 
 **Commands**:
 ```bash
@@ -877,97 +922,159 @@ growth resource complete resource-001
 ---
 
 ### 5.9 Milestone Commands - Full CRUD
-- [ ] Create `internal/cli/milestone.go`
-- [ ] Implement `growth milestone create <title> --type <type> --ref <id>`
-- [ ] Implement `growth milestone list [flags]`
-- [ ] Filter by status, type
-- [ ] Implement `growth milestone view <id>`
-- [ ] Implement `growth milestone achieve <id> [flags]`
-- [ ] Flag: `--proof` (URL to evidence)
-- [ ] Set achievedDate to now
+- [x] Create `internal/cli/milestone.go`
+- [x] Implement `growth milestone create <title> --type <type> --ref <id>`
+- [x] Implement `growth milestone list [flags]`
+- [x] Filter by status, type
+- [x] Implement `growth milestone view <id>`
+- [x] Implement `growth milestone edit <id>`
+- [x] Implement `growth milestone delete <id>`
+- [x] Implement `growth milestone achieve <id> [flags]`
+- [x] Flag: `--proof` (URL to evidence)
+- [x] Set achievedDate to now
 
-**Files to create**:
+**Files created**:
 - `internal/cli/milestone.go`
+
+**Commands**:
+```bash
+growth milestone create "Complete Python Basics" --type skill-level --ref skill-001
+growth milestone list --type goal-level
+growth milestone view milestone-001
+growth milestone achieve milestone-001 --proof https://github.com/me/project
+```
 
 ---
 
 ### 5.10 Progress Commands - Log Entry
-- [ ] Create `internal/cli/progress.go`
-- [ ] Implement `growth progress log [message]`
-- [ ] Flags: `--skill`, `--resource`, `--milestone`
-- [ ] Create or update current week's log
-- [ ] Append to notes section
-- [ ] Update referenced entities
+- [x] Create `internal/cli/progress.go`
+- [x] Implement `growth progress log`
+- [x] Flags: `--date`, `--hours`, `--mood`, `--skills`
+- [x] Create progress log for specific date (defaults to today)
+- [x] Prompt for multiline daily summary
+- [x] **REFACTORED**: Changed from week-based to date-based logging
 
-**Files to create**:
+**Files created**:
 - `internal/cli/progress.go`
 
 **Command**:
 ```bash
-growth progress log "Completed Fast.ai Lesson 3" --skill ml --resource fastai
+growth progress log --hours 5 --mood motivated --skills skill-001
+growth progress log --date 2025-12-16
 ```
+
+**Features**:
+- Date-based logging (not week-based)
+- Interactive prompts for hours and mood
+- Multiline summary input (Ctrl+D or '.' to finish)
+- Skills can be added via --skills flag or linked later
 
 ---
 
 ### 5.11 Progress Commands - View & Stats
-- [ ] Implement `growth progress view [flags]`
-- [ ] Flags: `--week`, `--month`, `--date`
-- [ ] Display formatted log
-- [ ] Implement `growth progress stats [flags]`
-- [ ] Show hours invested, skills worked on, consistency
+- [x] Implement `growth progress list`
+- [x] Display all progress logs in chronological order
+- [x] Support `--format` flag (table, json, yaml)
+- [x] Implement `growth progress view <id>`
+- [x] Show full log details including body/summary
+- [x] Display skills worked, resources used, milestones achieved
+- [x] **NOTE**: Detailed stats moved to dedicated stats command (5.14)
 
 **Commands**:
 ```bash
-growth progress view --week
-growth progress stats --month
+growth progress list
+growth progress list --format json
+growth progress view progress-001
 ```
+
+**Features**:
+- List all progress logs with date, hours, mood
+- View individual log with complete details and markdown summary
+- Supports all output formats (table, json, yaml)
 
 ---
 
 ### 5.12 Search Command
-- [ ] Create `internal/cli/search.go`
-- [ ] Implement `growth search <query>`
-- [ ] Search across all entity types
-- [ ] Search in titles, tags, notes
-- [ ] Display results grouped by type
+- [x] Create `internal/cli/search.go`
+- [x] Implement `growth search <query>`
+- [x] Search across all entity types (skills, goals, resources, paths, milestones, progress)
+- [x] Filter by entity type with `--type` flag
+- [x] Search in titles, descriptions, tags, body content
+- [x] Display results grouped by type
 
-**Files to create**:
+**Files created**:
 - `internal/cli/search.go`
 
-**Command**:
+**Commands**:
 ```bash
 growth search "neural networks"
+growth search python --type skill
+growth search "backend development"
 ```
+
+**Features**:
+- Searches across 6 entity types
+- Optional --type filter for specific entity types
+- Results grouped by entity type with counts
+- Shows relevant fields (ID, title, status, etc.) for each result
 
 ---
 
 ### 5.13 Overview Command
-- [ ] Create `internal/cli/overview.go`
-- [ ] Implement `growth overview`
-- [ ] Display summary:
-  - Active goals count
-  - Skills in progress
-  - Recent progress logs
-  - Upcoming milestones
-- [ ] Text-based dashboard
+- [x] Create `internal/cli/overview.go`
+- [x] Implement `growth overview`
+- [x] Display comprehensive dashboard with:
+  - Active goals count and breakdown by priority
+  - Skills distribution (by category, level, status)
+  - Learning paths summary (AI-generated vs manual)
+  - Resources statistics (in-progress, completed, estimated hours)
+  - Milestones overview (achieved vs total, recent achievements)
+  - Recent progress logs with hours invested
 
-**Files to create**:
+**Files created**:
 - `internal/cli/overview.go`
+
+**Command**:
+```bash
+growth overview
+```
+
+**Features**:
+- Comprehensive text-based dashboard
+- Shows counts and percentages for all entity types
+- Highlights recent activity (last 7 days)
+- Displays upcoming milestones and active goals
+- Summary of total hours invested from progress logs
 
 ---
 
 ### 5.14 Stats Command
-- [ ] Create `internal/cli/stats.go`
-- [ ] Implement `growth stats`
-- [ ] Calculate and display:
-  - Total skills (by level, status)
-  - Total goals (by status)
-  - Total hours invested
-  - Learning velocity (hours/week)
-  - Milestone completion rate
+- [x] Create `internal/cli/stats.go`
+- [x] Implement `growth stats`
+- [x] Calculate and display detailed statistics:
+  - **Skill categories**: Top 5 categories with counts
+  - **Goal completion**: Completion rate and upcoming targets
+  - **Learning resources**: Completion statistics and hours breakdown
+  - **Milestones**: Achievement rate and recent milestones (last 30 days)
+  - **Progress tracking**: Total logs, hours invested, averages
+  - **Learning velocity**: Active skills, recent completions (last 30 days)
 
-**Files to create**:
+**Files created**:
 - `internal/cli/stats.go`
+
+**Command**:
+```bash
+growth stats
+```
+
+**Features**:
+- Top skill categories ranked by count
+- Goal completion rate with percentage
+- Resource completion with hours completed/total
+- Milestone achievements in last 30 days
+- Average hours per progress log
+- Recent activity metrics (last 4 weeks)
+- Active skills tracking from progress logs
 
 ---
 
