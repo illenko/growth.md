@@ -506,17 +506,7 @@ func (r *FilesystemRepository[T]) autoCommit(operation, filePath, id, title stri
 
 // generateCommitMessage generates a commit message from the template or a default format.
 func (r *FilesystemRepository[T]) generateCommitMessage(operation, id, title string) string {
-	if r.config != nil && r.config.Git.CommitMessageTemplate != "" {
-		// Use template - simple string replacement for now
-		msg := r.config.Git.CommitMessageTemplate
-		msg = strings.ReplaceAll(msg, "{{operation}}", operation)
-		msg = strings.ReplaceAll(msg, "{{entityType}}", r.entityType)
-		msg = strings.ReplaceAll(msg, "{{id}}", string(id))
-		msg = strings.ReplaceAll(msg, "{{title}}", title)
-		return msg
-	}
-
-	// Default format
+	// Convert operation to action word
 	var action string
 	switch operation {
 	case "create":
@@ -529,5 +519,21 @@ func (r *FilesystemRepository[T]) generateCommitMessage(operation, id, title str
 		action = "Modify"
 	}
 
+	if r.config != nil && r.config.Git.CommitMessageTemplate != "" {
+		// Use template - replace placeholders (supports both {{.Placeholder}} and {{placeholder}})
+		msg := r.config.Git.CommitMessageTemplate
+		msg = strings.ReplaceAll(msg, "{{.Action}}", action)
+		msg = strings.ReplaceAll(msg, "{{.EntityType}}", r.entityType)
+		msg = strings.ReplaceAll(msg, "{{.ID}}", id)
+		msg = strings.ReplaceAll(msg, "{{.Title}}", title)
+		// Also support lowercase versions for backwards compatibility
+		msg = strings.ReplaceAll(msg, "{{operation}}", operation)
+		msg = strings.ReplaceAll(msg, "{{entityType}}", r.entityType)
+		msg = strings.ReplaceAll(msg, "{{id}}", id)
+		msg = strings.ReplaceAll(msg, "{{title}}", title)
+		return msg
+	}
+
+	// Default format
 	return fmt.Sprintf("%s %s: %s (%s)", action, r.entityType, title, id)
 }
