@@ -44,7 +44,7 @@ func TestNewSkill(t *testing.T) {
 	t.Run("fails with invalid level", func(t *testing.T) {
 		_, err := NewSkill("skill-001", "Python", "programming", ProficiencyLevel("invalid"))
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "level is invalid")
+		assert.Contains(t, err.Error(), "invalid skill level")
 	})
 }
 
@@ -102,7 +102,7 @@ func TestSkill_Validate(t *testing.T) {
 				Timestamps: NewTimestamps(),
 			},
 			wantErr: true,
-			errMsg:  "level is invalid",
+			errMsg:  "invalid skill level",
 		},
 		{
 			name: "invalid status",
@@ -115,7 +115,7 @@ func TestSkill_Validate(t *testing.T) {
 				Timestamps: NewTimestamps(),
 			},
 			wantErr: true,
-			errMsg:  "status is invalid",
+			errMsg:  "invalid skill status",
 		},
 	}
 

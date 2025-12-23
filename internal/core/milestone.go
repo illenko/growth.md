@@ -48,23 +48,23 @@ func (m *Milestone) Validate() error {
 	}
 
 	if strings.TrimSpace(m.Title) == "" {
-		return errors.New("milestone title is required")
+		return errors.New("milestone title is required and cannot be empty")
 	}
 
 	if !m.Type.IsValid() {
-		return errors.New("milestone type is invalid")
+		return errors.New("invalid milestone type: must be one of: goal-level, path-level, skill-level")
 	}
 
 	if !m.ReferenceType.IsValid() {
-		return errors.New("milestone referenceType is invalid")
+		return errors.New("invalid reference type: must be one of: goal, path, skill (use --ref-type flag)")
 	}
 
 	if m.ReferenceID == "" {
-		return errors.New("milestone referenceId is required")
+		return errors.New("milestone reference ID is required (use --ref-id flag)")
 	}
 
 	if !m.Status.IsValid() {
-		return errors.New("milestone status is invalid")
+		return errors.New("invalid milestone status: must be one of: active, completed, archived")
 	}
 
 	if m.Created.IsZero() {

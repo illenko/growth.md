@@ -47,15 +47,15 @@ func (g *Goal) Validate() error {
 	}
 
 	if strings.TrimSpace(g.Title) == "" {
-		return errors.New("goal title is required")
+		return errors.New("goal title is required and cannot be empty")
 	}
 
 	if !g.Status.IsValid() {
-		return errors.New("goal status is invalid")
+		return errors.New("invalid goal status: must be one of: active, completed, archived")
 	}
 
 	if !g.Priority.IsValid() {
-		return errors.New("goal priority is invalid")
+		return errors.New("invalid goal priority: must be one of: high, medium, low")
 	}
 
 	if g.Created.IsZero() {
@@ -126,7 +126,7 @@ func (g *Goal) AddTag(tag string) {
 
 func (g *Goal) UpdateStatus(status Status) error {
 	if !status.IsValid() {
-		return errors.New("invalid goal status")
+		return errors.New("invalid goal status: must be one of: active, completed, archived")
 	}
 	g.Status = status
 	g.Touch()
@@ -135,7 +135,7 @@ func (g *Goal) UpdateStatus(status Status) error {
 
 func (g *Goal) UpdatePriority(priority Priority) error {
 	if !priority.IsValid() {
-		return errors.New("invalid goal priority")
+		return errors.New("invalid goal priority: must be one of: high, medium, low")
 	}
 	g.Priority = priority
 	g.Touch()

@@ -45,19 +45,19 @@ func (s *Skill) Validate() error {
 	}
 
 	if strings.TrimSpace(s.Title) == "" {
-		return errors.New("skill title is required")
+		return errors.New("skill title is required and cannot be empty")
 	}
 
 	if strings.TrimSpace(s.Category) == "" {
-		return errors.New("skill category is required")
+		return errors.New("skill category is required (e.g., 'Programming Languages', 'DevOps', 'Data Science')")
 	}
 
 	if !s.Level.IsValid() {
-		return errors.New("skill level is invalid")
+		return errors.New("invalid skill level: must be one of: beginner, intermediate, advanced, expert")
 	}
 
 	if !s.Status.IsValid() {
-		return errors.New("skill status is invalid")
+		return errors.New("invalid skill status: must be one of: not-started, learning, mastered")
 	}
 
 	if s.Created.IsZero() {
@@ -108,7 +108,7 @@ func (s *Skill) AddTag(tag string) {
 
 func (s *Skill) UpdateLevel(level ProficiencyLevel) error {
 	if !level.IsValid() {
-		return errors.New("invalid proficiency level")
+		return errors.New("invalid proficiency level: must be one of: beginner, intermediate, advanced, expert")
 	}
 	s.Level = level
 	s.Touch()
@@ -117,7 +117,7 @@ func (s *Skill) UpdateLevel(level ProficiencyLevel) error {
 
 func (s *Skill) UpdateStatus(status SkillStatus) error {
 	if !status.IsValid() {
-		return errors.New("invalid skill status")
+		return errors.New("invalid skill status: must be one of: not-started, learning, mastered")
 	}
 	s.Status = status
 	s.Touch()

@@ -47,23 +47,23 @@ func (r *Resource) Validate() error {
 	}
 
 	if strings.TrimSpace(r.Title) == "" {
-		return errors.New("resource title is required")
+		return errors.New("resource title is required and cannot be empty")
 	}
 
 	if !r.Type.IsValid() {
-		return errors.New("resource type is invalid")
+		return errors.New("invalid resource type: must be one of: book, course, video, article, project, documentation")
 	}
 
 	if r.SkillID == "" {
-		return errors.New("resource skillId is required")
+		return errors.New("resource skill ID is required (use --skill-id flag)")
 	}
 
 	if !r.Status.IsValid() {
-		return errors.New("resource status is invalid")
+		return errors.New("invalid resource status: must be one of: not-started, in-progress, completed")
 	}
 
 	if r.EstimatedHours < 0 {
-		return errors.New("resource estimatedHours cannot be negative")
+		return errors.New("resource estimated hours cannot be negative")
 	}
 
 	if r.Created.IsZero() {
@@ -80,7 +80,7 @@ func (r *Resource) Validate() error {
 // UpdateStatus updates the resource's status
 func (r *Resource) UpdateStatus(status ResourceStatus) error {
 	if !status.IsValid() {
-		return errors.New("invalid resource status")
+		return errors.New("invalid resource status: must be one of: not-started, in-progress, completed")
 	}
 	r.Status = status
 	r.Touch()
@@ -130,7 +130,7 @@ func (r *Resource) SetAuthor(author string) {
 // SetEstimatedHours sets the estimated time investment
 func (r *Resource) SetEstimatedHours(hours float64) error {
 	if hours < 0 {
-		return errors.New("estimated hours cannot be negative")
+		return errors.New("estimated hours cannot be negative (must be >= 0)")
 	}
 	r.EstimatedHours = hours
 	r.Touch()

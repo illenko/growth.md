@@ -43,19 +43,19 @@ func TestNewMilestone(t *testing.T) {
 	t.Run("fails with invalid milestone type", func(t *testing.T) {
 		_, err := NewMilestone("milestone-001", "First ML Model", MilestoneType("invalid"), ReferenceGoal, "goal-001")
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "type is invalid")
+		assert.Contains(t, err.Error(), "invalid milestone type")
 	})
 
 	t.Run("fails with invalid reference type", func(t *testing.T) {
 		_, err := NewMilestone("milestone-001", "First ML Model", MilestoneGoalLevel, ReferenceType("invalid"), "goal-001")
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "referenceType is invalid")
+		assert.Contains(t, err.Error(), "invalid reference type")
 	})
 
 	t.Run("fails with empty referenceId", func(t *testing.T) {
 		_, err := NewMilestone("milestone-001", "First ML Model", MilestoneGoalLevel, ReferenceGoal, "")
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "referenceId is required")
+		assert.Contains(t, err.Error(), "reference ID is required")
 	})
 }
 

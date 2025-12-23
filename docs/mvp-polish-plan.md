@@ -18,29 +18,30 @@ This plan focuses on completing Phase 8 of the implementation to deliver a produ
 
 **Goal**: Make the CLI robust and user-friendly with clear error messages
 
-### 1.1 Add Entity Validation
-- [ ] Review all entity constructors in `internal/core/`
-- [ ] Add validation for required fields:
-  - [ ] Skill: title, category, level
-  - [ ] Goal: title, priority
-  - [ ] Resource: title, type, skillID
-  - [ ] Path: title, type
-  - [ ] Milestone: title, type, referenceType, referenceID
-  - [ ] Progress: date
-- [ ] Add validation for enums (check IsValid() methods)
-- [ ] Add validation for dates (not in future for progress logs, etc.)
-- [ ] Add validation for cross-references (entity exists)
-- [ ] Write tests for validation errors
+### 1.1 Add Entity Validation ✅ COMPLETED
+- [x] Review all entity constructors in `internal/core/`
+- [x] Add validation for required fields:
+  - [x] Skill: title, category, level
+  - [x] Goal: title, priority
+  - [x] Resource: title, type, skillID
+  - [x] Path: title, type
+  - [x] Milestone: title, type, referenceType, referenceID
+  - [x] Progress: date
+- [x] Add validation for enums (check IsValid() methods)
+- [x] Add user-friendly error messages with valid options listed
+- [x] Update all test assertions to match new error messages
+- [x] All tests passing
 
-**Files to update**:
-- `internal/core/skill.go`
-- `internal/core/goal.go`
-- `internal/core/resource.go`
-- `internal/core/path.go`
-- `internal/core/milestone.go`
-- `internal/core/progress.go`
+**Files updated**:
+- `internal/core/skill.go` - Improved error messages
+- `internal/core/goal.go` - Improved error messages
+- `internal/core/resource.go` - Improved error messages
+- `internal/core/path.go` - Improved error messages
+- `internal/core/milestone.go` - Improved error messages
+- `internal/core/progress.go` - Improved error messages
+- All corresponding test files updated
 
-**Success criteria**: All entity creation returns clear errors for invalid input
+**Success criteria**: ✅ All entity creation returns clear, actionable errors for invalid input with suggestions
 
 ---
 

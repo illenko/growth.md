@@ -35,13 +35,13 @@ func TestNewResource(t *testing.T) {
 	t.Run("fails with invalid type", func(t *testing.T) {
 		_, err := NewResource("resource-001", "Fluent Python", ResourceType("invalid"), "skill-002")
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "type is invalid")
+		assert.Contains(t, err.Error(), "invalid resource type")
 	})
 
 	t.Run("fails with empty skillId", func(t *testing.T) {
 		_, err := NewResource("resource-001", "Fluent Python", ResourceBook, "")
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "skillId is required")
+		assert.Contains(t, err.Error(), "skill ID is required")
 	})
 }
 

@@ -44,15 +44,15 @@ func (p *LearningPath) Validate() error {
 	}
 
 	if strings.TrimSpace(p.Title) == "" {
-		return errors.New("path title is required")
+		return errors.New("path title is required and cannot be empty")
 	}
 
 	if !p.Type.IsValid() {
-		return errors.New("path type is invalid")
+		return errors.New("invalid path type: must be one of: manual, ai-generated")
 	}
 
 	if !p.Status.IsValid() {
-		return errors.New("path status is invalid")
+		return errors.New("invalid path status: must be one of: active, completed, archived")
 	}
 
 	if p.Created.IsZero() {
@@ -103,7 +103,7 @@ func (p *LearningPath) AddTag(tag string) {
 
 func (p *LearningPath) UpdateStatus(status Status) error {
 	if !status.IsValid() {
-		return errors.New("invalid path status")
+		return errors.New("invalid path status: must be one of: active, completed, archived")
 	}
 	p.Status = status
 	p.Touch()

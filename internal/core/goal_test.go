@@ -40,7 +40,7 @@ func TestNewGoal(t *testing.T) {
 	t.Run("fails with invalid priority", func(t *testing.T) {
 		_, err := NewGoal("goal-001", "Become ML Engineer", Priority("invalid"))
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "priority is invalid")
+		assert.Contains(t, err.Error(), "invalid goal priority")
 	})
 }
 
@@ -94,7 +94,7 @@ func TestGoal_Validate(t *testing.T) {
 				Timestamps: NewTimestamps(),
 			},
 			wantErr: true,
-			errMsg:  "status is invalid",
+			errMsg:  "invalid goal status",
 		},
 		{
 			name: "invalid priority",
@@ -106,7 +106,7 @@ func TestGoal_Validate(t *testing.T) {
 				Timestamps: NewTimestamps(),
 			},
 			wantErr: true,
-			errMsg:  "priority is invalid",
+			errMsg:  "invalid goal priority",
 		},
 	}
 

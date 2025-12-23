@@ -43,7 +43,7 @@ func TestNewLearningPath(t *testing.T) {
 	t.Run("fails with invalid type", func(t *testing.T) {
 		_, err := NewLearningPath("path-001", "ML Track", PathType("invalid"))
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "type is invalid")
+		assert.Contains(t, err.Error(), "invalid path type")
 	})
 }
 
@@ -86,7 +86,7 @@ func TestLearningPath_Validate(t *testing.T) {
 				Timestamps: NewTimestamps(),
 			},
 			wantErr: true,
-			errMsg:  "type is invalid",
+			errMsg:  "invalid path type",
 		},
 	}
 

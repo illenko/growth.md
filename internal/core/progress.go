@@ -48,11 +48,11 @@ func (p *ProgressLog) Validate() error {
 	}
 
 	if p.Date.IsZero() {
-		return errors.New("progress log date is required")
+		return errors.New("progress log date is required (use --date flag in YYYY-MM-DD format)")
 	}
 
 	if p.HoursInvested < 0 {
-		return errors.New("progress log hours invested cannot be negative")
+		return errors.New("progress log hours invested cannot be negative (must be >= 0)")
 	}
 
 	if p.Created.IsZero() {
@@ -99,10 +99,10 @@ func (p *ProgressLog) AddMilestoneAchieved(milestoneID EntityID) {
 	p.Touch()
 }
 
-// SetHoursInvested sets the total hours invested this week
+// SetHoursInvested sets the total hours invested
 func (p *ProgressLog) SetHoursInvested(hours float64) error {
 	if hours < 0 {
-		return errors.New("hours invested cannot be negative")
+		return errors.New("hours invested cannot be negative (must be >= 0)")
 	}
 	p.HoursInvested = hours
 	p.Touch()
