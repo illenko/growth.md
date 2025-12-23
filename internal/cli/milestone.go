@@ -184,7 +184,16 @@ func runMilestoneCreate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to check reference existence: %w", err)
 	}
 	if !exists {
-		return fmt.Errorf("%s %s does not exist", refType, refID)
+		var listCmd string
+		switch refType {
+		case core.ReferenceGoal:
+			listCmd = "growth goal list"
+		case core.ReferencePath:
+			listCmd = "growth path list"
+		case core.ReferenceSkill:
+			listCmd = "growth skill list"
+		}
+		return fmt.Errorf("%s '%s' not found. Use '%s' to see available %ss", refType, refID, listCmd, refType)
 	}
 
 	if milestoneType == "" {
@@ -197,7 +206,7 @@ func runMilestoneCreate(cmd *cobra.Command, args []string) error {
 
 	mType := core.MilestoneType(milestoneType)
 	if !mType.IsValid() {
-		return fmt.Errorf("invalid milestone type: %s", milestoneType)
+		return fmt.Errorf("invalid milestone type '%s'. Valid options: goal-level, path-level, skill-level", milestoneType)
 	}
 
 	id, err := GenerateNextID("milestone")
@@ -264,13 +273,13 @@ func runMilestoneList(cmd *cobra.Command, args []string) error {
 	} else if milestoneFilterType != "" {
 		mType := core.MilestoneType(milestoneFilterType)
 		if !mType.IsValid() {
-			return fmt.Errorf("invalid milestone type: %s", milestoneFilterType)
+			return fmt.Errorf("invalid milestone type '%s'. Valid options: goal-level, path-level, skill-level", milestoneFilterType)
 		}
 		milestones, err = milestoneRepo.FindByType(mType)
 	} else if milestoneStatus != "" {
 		status := core.Status(milestoneStatus)
 		if !status.IsValid() {
-			return fmt.Errorf("invalid status: %s", milestoneStatus)
+			return fmt.Errorf("invalid status '%s'. Valid options: active, completed, archived", milestoneStatus)
 		}
 		milestones, err = milestoneRepo.FindByStatus(status)
 	} else {
@@ -278,7 +287,7 @@ func runMilestoneList(cmd *cobra.Command, args []string) error {
 	}
 
 	if err != nil {
-		return fmt.Errorf("failed to retrieve milestones: %w", err)
+		return fmt.Errorf("failed to retrieve milestones: %w\nTry running 'growth milestone list' without filters to see all milestones", err)
 	}
 
 	if len(milestones) == 0 {
@@ -294,7 +303,7 @@ func runMilestoneView(cmd *cobra.Command, args []string) error {
 
 	milestone, err := milestoneRepo.GetByIDWithBody(id)
 	if err != nil {
-		return fmt.Errorf("failed to retrieve milestone: %w", err)
+		return fmt.Errorf("milestone '%s' not found. Use 'growth milestone list' to see available milestones", id)
 	}
 
 	if config.Display.OutputFormat == "table" {
@@ -330,7 +339,7 @@ func runMilestoneEdit(cmd *cobra.Command, args []string) error {
 
 	milestone, err := milestoneRepo.GetByIDWithBody(id)
 	if err != nil {
-		return fmt.Errorf("failed to retrieve milestone: %w", err)
+		return fmt.Errorf("milestone '%s' not found. Use 'growth milestone list' to see available milestones", id)
 	}
 
 	updated := false
@@ -343,7 +352,7 @@ func runMilestoneEdit(cmd *cobra.Command, args []string) error {
 	if cmd.Flags().Changed("status") {
 		status := core.Status(milestoneStatus)
 		if !status.IsValid() {
-			return fmt.Errorf("invalid status: %s", milestoneStatus)
+			return fmt.Errorf("invalid status '%s'. Valid options: active, completed, archived", milestoneStatus)
 		}
 		milestone.Status = status
 		if status == core.StatusCompleted && milestone.AchievedDate == nil {
@@ -389,7 +398,7 @@ func runMilestoneDelete(cmd *cobra.Command, args []string) error {
 
 	milestone, err := milestoneRepo.GetByID(id)
 	if err != nil {
-		return fmt.Errorf("failed to retrieve milestone: %w", err)
+		return fmt.Errorf("milestone '%s' not found. Use 'growth milestone list' to see available milestones", id)
 	}
 
 	fmt.Printf("You are about to delete:\n")
@@ -416,7 +425,7 @@ func runMilestoneAchieve(cmd *cobra.Command, args []string) error {
 
 	milestone, err := milestoneRepo.GetByIDWithBody(id)
 	if err != nil {
-		return fmt.Errorf("failed to retrieve milestone: %w", err)
+		return fmt.Errorf("milestone '%s' not found. Use 'growth milestone list' to see available milestones", id)
 	}
 
 	proof := milestoneProof

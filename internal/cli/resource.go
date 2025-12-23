@@ -176,7 +176,7 @@ func runResourceCreate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to check skill existence: %w", err)
 	}
 	if !exists {
-		return fmt.Errorf("skill %s does not exist", skillID)
+		return fmt.Errorf("skill '%s' not found. Use 'growth skill list' to see available skills", skillID)
 	}
 
 	if resourceType == "" {
@@ -189,7 +189,7 @@ func runResourceCreate(cmd *cobra.Command, args []string) error {
 
 	resType := core.ResourceType(resourceType)
 	if !resType.IsValid() {
-		return fmt.Errorf("invalid resource type: %s", resourceType)
+		return fmt.Errorf("invalid resource type '%s'. Valid options: book, course, video, article, project, documentation", resourceType)
 	}
 
 	id, err := GenerateNextID("resource")
@@ -265,13 +265,13 @@ func runResourceList(cmd *cobra.Command, args []string) error {
 	} else if resourceFilterType != "" {
 		resType := core.ResourceType(resourceFilterType)
 		if !resType.IsValid() {
-			return fmt.Errorf("invalid resource type: %s", resourceFilterType)
+			return fmt.Errorf("invalid resource type '%s'. Valid options: book, course, video, article, project, documentation", resourceFilterType)
 		}
 		resources, err = resourceRepo.FindByType(resType)
 	} else if resourceStatus != "" {
 		status := core.ResourceStatus(resourceStatus)
 		if !status.IsValid() {
-			return fmt.Errorf("invalid resource status: %s", resourceStatus)
+			return fmt.Errorf("invalid resource status '%s'. Valid options: not-started, in-progress, completed", resourceStatus)
 		}
 		resources, err = resourceRepo.FindByStatus(status)
 	} else {
@@ -279,7 +279,7 @@ func runResourceList(cmd *cobra.Command, args []string) error {
 	}
 
 	if err != nil {
-		return fmt.Errorf("failed to retrieve resources: %w", err)
+		return fmt.Errorf("failed to retrieve resources: %w\nTry running 'growth resource list' without filters to see all resources", err)
 	}
 
 	if len(resources) == 0 {
@@ -295,7 +295,7 @@ func runResourceView(cmd *cobra.Command, args []string) error {
 
 	resource, err := resourceRepo.GetByIDWithBody(id)
 	if err != nil {
-		return fmt.Errorf("failed to retrieve resource: %w", err)
+		return fmt.Errorf("resource '%s' not found. Use 'growth resource list' to see available resources", id)
 	}
 
 	if config.Display.OutputFormat == "table" {
@@ -334,7 +334,7 @@ func runResourceEdit(cmd *cobra.Command, args []string) error {
 
 	resource, err := resourceRepo.GetByIDWithBody(id)
 	if err != nil {
-		return fmt.Errorf("failed to retrieve resource: %w", err)
+		return fmt.Errorf("resource '%s' not found. Use 'growth resource list' to see available resources", id)
 	}
 
 	updated := false
@@ -347,7 +347,7 @@ func runResourceEdit(cmd *cobra.Command, args []string) error {
 	if cmd.Flags().Changed("type") {
 		resType := core.ResourceType(resourceType)
 		if !resType.IsValid() {
-			return fmt.Errorf("invalid resource type: %s", resourceType)
+			return fmt.Errorf("invalid resource type '%s'. Valid options: book, course, video, article, project, documentation", resourceType)
 		}
 		resource.Type = resType
 		updated = true
@@ -377,7 +377,7 @@ func runResourceEdit(cmd *cobra.Command, args []string) error {
 	if cmd.Flags().Changed("status") {
 		status := core.ResourceStatus(resourceStatus)
 		if !status.IsValid() {
-			return fmt.Errorf("invalid resource status: %s", resourceStatus)
+			return fmt.Errorf("invalid resource status '%s'. Valid options: not-started, in-progress, completed", resourceStatus)
 		}
 		if err := resource.UpdateStatus(status); err != nil {
 			return fmt.Errorf("failed to update status: %w", err)
@@ -414,7 +414,7 @@ func runResourceDelete(cmd *cobra.Command, args []string) error {
 
 	resource, err := resourceRepo.GetByID(id)
 	if err != nil {
-		return fmt.Errorf("failed to retrieve resource: %w", err)
+		return fmt.Errorf("resource '%s' not found. Use 'growth resource list' to see available resources", id)
 	}
 
 	fmt.Printf("You are about to delete:\n")
@@ -441,7 +441,7 @@ func runResourceStart(cmd *cobra.Command, args []string) error {
 
 	resource, err := resourceRepo.GetByIDWithBody(id)
 	if err != nil {
-		return fmt.Errorf("failed to retrieve resource: %w", err)
+		return fmt.Errorf("resource '%s' not found. Use 'growth resource list' to see available resources", id)
 	}
 
 	resource.Start()
@@ -459,7 +459,7 @@ func runResourceComplete(cmd *cobra.Command, args []string) error {
 
 	resource, err := resourceRepo.GetByIDWithBody(id)
 	if err != nil {
-		return fmt.Errorf("failed to retrieve resource: %w", err)
+		return fmt.Errorf("resource '%s' not found. Use 'growth resource list' to see available resources", id)
 	}
 
 	resource.Complete()

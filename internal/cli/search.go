@@ -126,7 +126,7 @@ func searchByType(query, entityType string) error {
 	case "skill", "skills":
 		skills, err := skillRepo.Search(query)
 		if err != nil {
-			return fmt.Errorf("search failed: %w", err)
+			return fmt.Errorf("search failed: %w\nTry running 'growth skill list' to see all skills", err)
 		}
 		if len(skills) == 0 {
 			PrintInfo("No skills found")
@@ -137,7 +137,7 @@ func searchByType(query, entityType string) error {
 	case "goal", "goals":
 		goals, err := goalRepo.Search(query)
 		if err != nil {
-			return fmt.Errorf("search failed: %w", err)
+			return fmt.Errorf("search failed: %w\nTry running 'growth goal list' to see all goals", err)
 		}
 		if len(goals) == 0 {
 			PrintInfo("No goals found")
@@ -148,7 +148,7 @@ func searchByType(query, entityType string) error {
 	case "resource", "resources":
 		resources, err := resourceRepo.Search(query)
 		if err != nil {
-			return fmt.Errorf("search failed: %w", err)
+			return fmt.Errorf("search failed: %w\nTry running 'growth resource list' to see all resources", err)
 		}
 		if len(resources) == 0 {
 			PrintInfo("No resources found")
@@ -159,7 +159,7 @@ func searchByType(query, entityType string) error {
 	case "path", "paths":
 		paths, err := pathRepo.Search(query)
 		if err != nil {
-			return fmt.Errorf("search failed: %w", err)
+			return fmt.Errorf("search failed: %w\nTry running 'growth path list' to see all paths", err)
 		}
 		if len(paths) == 0 {
 			PrintInfo("No paths found")
@@ -170,7 +170,7 @@ func searchByType(query, entityType string) error {
 	case "milestone", "milestones":
 		milestones, err := milestoneRepo.Search(query)
 		if err != nil {
-			return fmt.Errorf("search failed: %w", err)
+			return fmt.Errorf("search failed: %w\nTry running 'growth milestone list' to see all milestones", err)
 		}
 		if len(milestones) == 0 {
 			PrintInfo("No milestones found")
@@ -181,7 +181,7 @@ func searchByType(query, entityType string) error {
 	case "progress":
 		progressLogs, err := progressRepo.Search(query)
 		if err != nil {
-			return fmt.Errorf("search failed: %w", err)
+			return fmt.Errorf("search failed: %w\nTry running 'growth progress list' to see all progress logs", err)
 		}
 		if len(progressLogs) == 0 {
 			PrintInfo("No progress logs found")
@@ -190,6 +190,6 @@ func searchByType(query, entityType string) error {
 		return PrintOutputWithConfig(progressLogs)
 
 	default:
-		return fmt.Errorf("unknown entity type: %s (must be skill, goal, resource, path, milestone, or progress)", entityType)
+		return fmt.Errorf("unknown entity type '%s'. Valid options: skill, goal, resource, path, milestone, progress", entityType)
 	}
 }

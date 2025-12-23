@@ -227,13 +227,13 @@ func runGoalList(cmd *cobra.Command, args []string) error {
 	if goalStatus != "" {
 		status := core.Status(goalStatus)
 		if !status.IsValid() {
-			return fmt.Errorf("invalid status: %s", goalStatus)
+			return fmt.Errorf("invalid status '%s'. Valid options: active, completed, archived", goalStatus)
 		}
 		goals, err = goalRepo.FindByStatus(status)
 	} else if goalPriority != "" {
 		priority := core.Priority(goalPriority)
 		if !priority.IsValid() {
-			return fmt.Errorf("invalid priority: %s", goalPriority)
+			return fmt.Errorf("invalid priority '%s'. Valid options: high, medium, low", goalPriority)
 		}
 		goals, err = goalRepo.FindByPriority(priority)
 	} else {
@@ -241,7 +241,7 @@ func runGoalList(cmd *cobra.Command, args []string) error {
 	}
 
 	if err != nil {
-		return fmt.Errorf("failed to retrieve goals: %w", err)
+		return fmt.Errorf("failed to retrieve goals: %w\nTry running 'growth goal list' without filters to see all goals", err)
 	}
 
 	if goalPriority != "" && goalStatus != "" {
@@ -269,7 +269,7 @@ func runGoalView(cmd *cobra.Command, args []string) error {
 
 	goal, err := goalRepo.GetByIDWithBody(id)
 	if err != nil {
-		return fmt.Errorf("failed to retrieve goal: %w", err)
+		return fmt.Errorf("goal '%s' not found. Use 'growth goal list' to see available goals", id)
 	}
 
 	if config.Display.OutputFormat == "table" {
@@ -307,7 +307,7 @@ func runGoalEdit(cmd *cobra.Command, args []string) error {
 
 	goal, err := goalRepo.GetByIDWithBody(id)
 	if err != nil {
-		return fmt.Errorf("failed to retrieve goal: %w", err)
+		return fmt.Errorf("goal '%s' not found. Use 'growth goal list' to see available goals", id)
 	}
 
 	updated := false
@@ -320,7 +320,7 @@ func runGoalEdit(cmd *cobra.Command, args []string) error {
 	if cmd.Flags().Changed("priority") {
 		priority := core.Priority(goalPriority)
 		if !priority.IsValid() {
-			return fmt.Errorf("invalid priority: %s", goalPriority)
+			return fmt.Errorf("invalid priority '%s'. Valid options: high, medium, low", goalPriority)
 		}
 		if err := goal.UpdatePriority(priority); err != nil {
 			return fmt.Errorf("failed to update priority: %w", err)
@@ -331,7 +331,7 @@ func runGoalEdit(cmd *cobra.Command, args []string) error {
 	if cmd.Flags().Changed("status") {
 		status := core.Status(goalStatus)
 		if !status.IsValid() {
-			return fmt.Errorf("invalid status: %s", goalStatus)
+			return fmt.Errorf("invalid status '%s'. Valid options: active, completed, archived", goalStatus)
 		}
 		if err := goal.UpdateStatus(status); err != nil {
 			return fmt.Errorf("failed to update status: %w", err)
@@ -440,7 +440,7 @@ func runGoalDelete(cmd *cobra.Command, args []string) error {
 
 	goal, err := goalRepo.GetByID(id)
 	if err != nil {
-		return fmt.Errorf("failed to retrieve goal: %w", err)
+		return fmt.Errorf("goal '%s' not found. Use 'growth goal list' to see available goals", id)
 	}
 
 	fmt.Printf("You are about to delete:\n")
@@ -468,7 +468,7 @@ func runGoalAddPath(cmd *cobra.Command, args []string) error {
 
 	goal, err := goalRepo.GetByIDWithBody(goalID)
 	if err != nil {
-		return fmt.Errorf("failed to retrieve goal: %w", err)
+		return fmt.Errorf("goal '%s' not found. Use 'growth goal list' to see available goals", goalID)
 	}
 
 	exists, err := pathRepo.Exists(pathID)
@@ -476,7 +476,7 @@ func runGoalAddPath(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to check path existence: %w", err)
 	}
 	if !exists {
-		return fmt.Errorf("path %s does not exist", pathID)
+		return fmt.Errorf("path '%s' not found. Use 'growth path list' to see available paths", pathID)
 	}
 
 	goal.AddLearningPath(pathID)
@@ -495,7 +495,7 @@ func runGoalRemovePath(cmd *cobra.Command, args []string) error {
 
 	goal, err := goalRepo.GetByIDWithBody(goalID)
 	if err != nil {
-		return fmt.Errorf("failed to retrieve goal: %w", err)
+		return fmt.Errorf("goal '%s' not found. Use 'growth goal list' to see available goals", goalID)
 	}
 
 	goal.RemoveLearningPath(pathID)

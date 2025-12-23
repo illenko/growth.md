@@ -160,7 +160,7 @@ func runProgressLog(cmd *cobra.Command, args []string) error {
 func runProgressList(cmd *cobra.Command, args []string) error {
 	logs, err := progressRepo.GetAll()
 	if err != nil {
-		return fmt.Errorf("failed to retrieve progress logs: %w", err)
+		return fmt.Errorf("failed to retrieve progress logs: %w\nTry running 'growth progress list' again or check your repository", err)
 	}
 
 	if len(logs) == 0 {
@@ -176,7 +176,7 @@ func runProgressView(cmd *cobra.Command, args []string) error {
 
 	log, err := progressRepo.GetByIDWithBody(id)
 	if err != nil {
-		return fmt.Errorf("failed to retrieve progress log: %w", err)
+		return fmt.Errorf("progress log '%s' not found. Use 'growth progress list' to see available logs", id)
 	}
 
 	if config.Display.OutputFormat == "table" {

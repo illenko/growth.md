@@ -187,13 +187,13 @@ func runPathList(cmd *cobra.Command, args []string) error {
 	if pathFilterType != "" {
 		pType := core.PathType(pathFilterType)
 		if !pType.IsValid() {
-			return fmt.Errorf("invalid path type: %s", pathFilterType)
+			return fmt.Errorf("invalid path type '%s'. Valid options: manual, ai-generated", pathFilterType)
 		}
 		paths, err = pathRepo.FindByType(pType)
 	} else if pathStatus != "" {
 		status := core.Status(pathStatus)
 		if !status.IsValid() {
-			return fmt.Errorf("invalid status: %s", pathStatus)
+			return fmt.Errorf("invalid status '%s'. Valid options: active, completed, archived", pathStatus)
 		}
 		paths, err = pathRepo.FindByStatus(status)
 	} else {
@@ -201,7 +201,7 @@ func runPathList(cmd *cobra.Command, args []string) error {
 	}
 
 	if err != nil {
-		return fmt.Errorf("failed to retrieve paths: %w", err)
+		return fmt.Errorf("failed to retrieve paths: %w\nTry running 'growth path list' without filters to see all paths", err)
 	}
 
 	if len(paths) == 0 {
@@ -217,7 +217,7 @@ func runPathView(cmd *cobra.Command, args []string) error {
 
 	path, err := pathRepo.GetByIDWithBody(id)
 	if err != nil {
-		return fmt.Errorf("failed to retrieve path: %w", err)
+		return fmt.Errorf("path '%s' not found. Use 'growth path list' to see available paths", id)
 	}
 
 	if config.Display.OutputFormat == "table" {
@@ -252,7 +252,7 @@ func runPathEdit(cmd *cobra.Command, args []string) error {
 
 	path, err := pathRepo.GetByIDWithBody(id)
 	if err != nil {
-		return fmt.Errorf("failed to retrieve path: %w", err)
+		return fmt.Errorf("path '%s' not found. Use 'growth path list' to see available paths", id)
 	}
 
 	updated := false
@@ -265,7 +265,7 @@ func runPathEdit(cmd *cobra.Command, args []string) error {
 	if cmd.Flags().Changed("status") {
 		status := core.Status(pathStatus)
 		if !status.IsValid() {
-			return fmt.Errorf("invalid status: %s", pathStatus)
+			return fmt.Errorf("invalid status '%s'. Valid options: active, completed, archived", pathStatus)
 		}
 		if err := path.UpdateStatus(status); err != nil {
 			return fmt.Errorf("failed to update status: %w", err)
@@ -302,7 +302,7 @@ func runPathDelete(cmd *cobra.Command, args []string) error {
 
 	path, err := pathRepo.GetByID(id)
 	if err != nil {
-		return fmt.Errorf("failed to retrieve path: %w", err)
+		return fmt.Errorf("path '%s' not found. Use 'growth path list' to see available paths", id)
 	}
 
 	fmt.Printf("You are about to delete:\n")

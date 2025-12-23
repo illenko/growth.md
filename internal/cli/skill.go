@@ -198,7 +198,7 @@ func runSkillList(cmd *cobra.Command, args []string) error {
 	if skillCategory != "" && skillFilterLevel != "" {
 		level := core.ProficiencyLevel(skillFilterLevel)
 		if !level.IsValid() {
-			return fmt.Errorf("invalid proficiency level: %s", skillFilterLevel)
+			return fmt.Errorf("invalid proficiency level '%s'. Valid options: beginner, intermediate, advanced, expert", skillFilterLevel)
 		}
 		skills, err = skillRepo.FindByCategoryAndLevel(skillCategory, level)
 	} else if skillCategory != "" {
@@ -206,13 +206,13 @@ func runSkillList(cmd *cobra.Command, args []string) error {
 	} else if skillFilterLevel != "" {
 		level := core.ProficiencyLevel(skillFilterLevel)
 		if !level.IsValid() {
-			return fmt.Errorf("invalid proficiency level: %s", skillFilterLevel)
+			return fmt.Errorf("invalid proficiency level '%s'. Valid options: beginner, intermediate, advanced, expert", skillFilterLevel)
 		}
 		skills, err = skillRepo.FindByLevel(level)
 	} else if skillStatus != "" {
 		status := core.SkillStatus(skillStatus)
 		if !status.IsValid() {
-			return fmt.Errorf("invalid skill status: %s", skillStatus)
+			return fmt.Errorf("invalid skill status '%s'. Valid options: not-started, learning, mastered", skillStatus)
 		}
 		skills, err = skillRepo.FindByStatus(status)
 	} else {
@@ -220,7 +220,7 @@ func runSkillList(cmd *cobra.Command, args []string) error {
 	}
 
 	if err != nil {
-		return fmt.Errorf("failed to retrieve skills: %w", err)
+		return fmt.Errorf("failed to retrieve skills: %w\nTry running 'growth skill list' without filters to see all skills", err)
 	}
 
 	if len(skills) == 0 {
@@ -236,7 +236,7 @@ func runSkillView(cmd *cobra.Command, args []string) error {
 
 	skill, err := skillRepo.GetByIDWithBody(id)
 	if err != nil {
-		return fmt.Errorf("failed to retrieve skill: %w", err)
+		return fmt.Errorf("skill '%s' not found. Use 'growth skill list' to see available skills", id)
 	}
 
 	if config.Display.OutputFormat == "table" {
@@ -269,7 +269,7 @@ func runSkillEdit(cmd *cobra.Command, args []string) error {
 
 	skill, err := skillRepo.GetByIDWithBody(id)
 	if err != nil {
-		return fmt.Errorf("failed to retrieve skill: %w", err)
+		return fmt.Errorf("skill '%s' not found. Use 'growth skill list' to see available skills", id)
 	}
 
 	updated := false
@@ -287,7 +287,7 @@ func runSkillEdit(cmd *cobra.Command, args []string) error {
 	if cmd.Flags().Changed("level") {
 		level := core.ProficiencyLevel(skillLevel)
 		if !level.IsValid() {
-			return fmt.Errorf("invalid proficiency level: %s", skillLevel)
+			return fmt.Errorf("invalid proficiency level '%s'. Valid options: beginner, intermediate, advanced, expert", skillLevel)
 		}
 		if err := skill.UpdateLevel(level); err != nil {
 			return fmt.Errorf("failed to update level: %w", err)
@@ -298,7 +298,7 @@ func runSkillEdit(cmd *cobra.Command, args []string) error {
 	if cmd.Flags().Changed("status") {
 		status := core.SkillStatus(skillStatus)
 		if !status.IsValid() {
-			return fmt.Errorf("invalid skill status: %s", skillStatus)
+			return fmt.Errorf("invalid skill status '%s'. Valid options: not-started, learning, mastered", skillStatus)
 		}
 		if err := skill.UpdateStatus(status); err != nil {
 			return fmt.Errorf("failed to update status: %w", err)
@@ -369,7 +369,7 @@ func runSkillEdit(cmd *cobra.Command, args []string) error {
 	}
 
 	if err := skillRepo.Update(skill); err != nil {
-		return fmt.Errorf("failed to update skill: %w", err)
+		return fmt.Errorf("failed to update skill '%s': %w", skill.ID, err)
 	}
 
 	PrintSuccess(fmt.Sprintf("Updated skill %s: %s", skill.ID, skill.Title))
@@ -381,7 +381,7 @@ func runSkillDelete(cmd *cobra.Command, args []string) error {
 
 	skill, err := skillRepo.GetByID(id)
 	if err != nil {
-		return fmt.Errorf("failed to retrieve skill: %w", err)
+		return fmt.Errorf("skill '%s' not found. Use 'growth skill list' to see available skills", id)
 	}
 
 	fmt.Printf("You are about to delete:\n")
@@ -396,7 +396,7 @@ func runSkillDelete(cmd *cobra.Command, args []string) error {
 	}
 
 	if err := skillRepo.Delete(id); err != nil {
-		return fmt.Errorf("failed to delete skill: %w", err)
+		return fmt.Errorf("failed to delete skill '%s': %w", id, err)
 	}
 
 	PrintSuccess(fmt.Sprintf("Deleted skill %s", id))

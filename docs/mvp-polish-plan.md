@@ -46,20 +46,20 @@ This plan focuses on completing Phase 8 of the implementation to deliver a produ
 ---
 
 ### 1.2 Improve CLI Error Messages
-- [ ] Review all CLI commands in `internal/cli/`
-- [ ] Add user-friendly error messages for common scenarios:
-  - [ ] Entity not found: "Skill 'skill-042' not found. Use 'growth skill list' to see available skills."
-  - [ ] Invalid ID format: "Invalid ID format. Expected format: skill-001, goal-001, etc."
-  - [ ] File permission errors: "Cannot write to directory. Check permissions for: /path"
-  - [ ] Git not initialized: "Git repository not initialized. Run 'growth init' or 'git init' first."
-  - [ ] Config file missing: "Config file not found. Run 'growth init' to create one."
-  - [ ] Invalid enum value: "Invalid status 'foo'. Valid options: active, completed, archived"
-  - [ ] Required flag missing: "Required flag --skill-id not provided"
-  - [ ] Invalid date format: "Invalid date format. Use YYYY-MM-DD (e.g., 2025-12-31)"
-  - [ ] Duplicate entity: "Milestone with ID 'milestone-001' already exists"
-- [ ] Add helpful suggestions in error messages
-- [ ] Use consistent error message format
-- [ ] Test each error scenario manually
+- [x] Review all CLI commands in `internal/cli/`
+- [x] Add user-friendly error messages for common scenarios:
+  - [x] Entity not found: "Skill 'skill-042' not found. Use 'growth skill list' to see available skills."
+  - [x] Invalid ID format: "Invalid ID format. Expected format: skill-001, goal-001, etc."
+  - [x] File permission errors: "Cannot write to directory. Check permissions for: /path"
+  - [x] Git not initialized: "Git repository not initialized. Run 'growth init' or 'git init' first."
+  - [x] Config file missing: "Config file not found. Run 'growth init' to create one."
+  - [x] Invalid enum value: "Invalid status 'foo'. Valid options: active, completed, archived"
+  - [x] Required flag missing: "Required flag --skill-id not provided"
+  - [x] Invalid date format: "Invalid date format. Use YYYY-MM-DD (e.g., 2025-12-31)"
+  - [x] Duplicate entity: "Milestone with ID 'milestone-001' already exists"
+- [x] Add helpful suggestions in error messages
+- [x] Use consistent error message format
+- [x] Test each error scenario manually
 
 **Files to update**:
 - `internal/cli/skill.go`
