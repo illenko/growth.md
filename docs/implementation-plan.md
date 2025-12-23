@@ -818,7 +818,7 @@ growth skill delete skill-005
 ### 5.4 Goal Commands - Full CRUD
 - [x] Create `internal/cli/goal.go`
 - [x] Implement `growth goal create <title> [flags]`
-- [x] Flags: `--priority`, `--target-date`
+- [x] Flags: `--priority`, `--target`
 - [x] Implement `growth goal list [flags]`
 - [x] Flags: `--status`, `--priority`
 - [x] Implement `growth goal view <id>`
@@ -830,7 +830,7 @@ growth skill delete skill-005
 
 **Commands**:
 ```bash
-growth goal create "Become ML Engineer" --priority high --target-date 2026-12-31
+growth goal create "Become ML Engineer" --priority high --target 2026-12-31
 growth goal list --status active
 growth goal view goal-001
 growth goal edit goal-001 --priority medium
@@ -844,22 +844,21 @@ growth goal delete goal-005
 - [x] Implement `growth goal remove-path <goal-id> <path-id>`
 - [x] Update goal file frontmatter
 - [x] Validate path exists
-- [x] Add skills to goals with `add-skill` and `remove-skill` commands
 
 **Commands**:
 ```bash
 growth goal add-path goal-001 path-001
 growth goal remove-path goal-001 path-002
-growth goal add-skill goal-001 skill-003
-growth goal remove-skill goal-001 skill-005
 ```
+
+**Note**: Goals link to learning paths, not directly to skills. Skills are associated with resources instead.
 
 ---
 
 ### 5.6 Path Commands - Basic CRUD
 - [x] Create `internal/cli/path.go`
 - [x] Implement `growth path create <title> [flags]`
-- [x] Flags: `--type`, `--status`
+- [x] Flags: `--type`, `--tags`
 - [x] Implement `growth path list [flags]`
 - [x] Flags: `--type`, `--status`
 - [x] Implement `growth path view <id>`
@@ -884,8 +883,8 @@ growth path delete path-005
 
 ### 5.7 Resource Commands - Full CRUD
 - [x] Create `internal/cli/resource.go`
-- [x] Implement `growth resource create <title> --skill <id> --type <type> [flags]`
-- [x] Flags: `--url`, `--author`, `--estimated-hours`
+- [x] Implement `growth resource create <title> --skill-id <id> --type <type> [flags]`
+- [x] Flags: `--url`, `--author`, `--hours`
 - [x] Implement `growth resource list [flags]`
 - [x] Filter by skill, type, status
 - [x] Implement `growth resource view <id>`
@@ -897,10 +896,10 @@ growth path delete path-005
 
 **Commands**:
 ```bash
-growth resource create "Fast.ai Course" --skill skill-001 --type course --url https://fast.ai --estimated-hours 40
-growth resource list --skill skill-001 --status in-progress
+growth resource create "Fast.ai Course" --skill-id skill-001 --type course --url https://fast.ai --hours 40
+growth resource list --skill-id skill-001 --status in-progress
 growth resource view resource-001
-growth resource edit resource-001 --estimated-hours 50
+growth resource edit resource-001 --hours 50
 growth resource delete resource-005
 ```
 
@@ -923,7 +922,7 @@ growth resource complete resource-001
 
 ### 5.9 Milestone Commands - Full CRUD
 - [x] Create `internal/cli/milestone.go`
-- [x] Implement `growth milestone create <title> --type <type> --ref <id>`
+- [x] Implement `growth milestone create <title> --type <type> --ref-type <type> --ref-id <id>`
 - [x] Implement `growth milestone list [flags]`
 - [x] Filter by status, type
 - [x] Implement `growth milestone view <id>`
@@ -938,7 +937,7 @@ growth resource complete resource-001
 
 **Commands**:
 ```bash
-growth milestone create "Complete Python Basics" --type skill-level --ref skill-001
+growth milestone create "Complete Python Basics" --type skill-level --ref-type skill --ref-id skill-001
 growth milestone list --type goal-level
 growth milestone view milestone-001
 growth milestone achieve milestone-001 --proof https://github.com/me/project
