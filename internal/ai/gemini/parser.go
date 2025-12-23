@@ -95,7 +95,7 @@ func ParsePathGeneration(responseText string, pathID, goalID core.EntityID) (*ai
 		Body:        output.Path.Description,
 		Type:        core.PathTypeAIGenerated,
 		Status:      core.StatusActive,
-		GeneratedBy: "gemini-2.0-flash-exp",
+		GeneratedBy: "gemini-3-flash-preview",
 		Phases:      []core.EntityID{},
 		Tags:        []string{},
 		Timestamps:  core.NewTimestamps(),

@@ -1,9 +1,13 @@
 package cli
 
 import (
+	"context"
 	"fmt"
 	"strings"
+	"time"
 
+	"github.com/illenko/growth.md/internal/ai"
+	"github.com/illenko/growth.md/internal/aifactory"
 	"github.com/illenko/growth.md/internal/core"
 	"github.com/spf13/cobra"
 )
@@ -15,6 +19,14 @@ var (
 	skillStatus      string
 	skillFilterLevel string
 	skillTitle       string
+
+	// Suggest resources flags
+	skillSuggestTargetLevel string
+	skillSuggestStyle       string
+	skillSuggestBudget      string
+	skillSuggestProvider    string
+	skillSuggestModel       string
+	skillSuggestSave        bool
 )
 
 var skillCmd = &cobra.Command{
@@ -101,6 +113,23 @@ Examples:
 	RunE:    runSkillDelete,
 }
 
+var skillSuggestResourcesCmd = &cobra.Command{
+	Use:   "suggest-resources <skill-id>",
+	Short: "Get AI-powered resource recommendations",
+	Long: `Get personalized learning resource recommendations for a skill.
+
+The AI will suggest books, courses, videos, and projects based on your
+current level, target level, and learning preferences.
+
+Examples:
+  growth skill suggest-resources skill-001
+  growth skill suggest-resources skill-001 --target-level advanced
+  growth skill suggest-resources skill-001 --budget free --save
+  growth skill suggest-resources skill-001 --style project-based`,
+	Args: cobra.ExactArgs(1),
+	RunE: runSkillSuggestResources,
+}
+
 func init() {
 	rootCmd.AddCommand(skillCmd)
 	skillCmd.AddCommand(skillCreateCmd)
@@ -108,6 +137,7 @@ func init() {
 	skillCmd.AddCommand(skillViewCmd)
 	skillCmd.AddCommand(skillEditCmd)
 	skillCmd.AddCommand(skillDeleteCmd)
+	skillCmd.AddCommand(skillSuggestResourcesCmd)
 
 	skillCreateCmd.Flags().StringVarP(&skillCategory, "category", "c", "", "skill category")
 	skillCreateCmd.Flags().StringVarP(&skillLevel, "level", "l", "", "proficiency level (beginner, intermediate, advanced, expert)")
@@ -122,6 +152,13 @@ func init() {
 	skillEditCmd.Flags().StringVarP(&skillLevel, "level", "l", "", "proficiency level")
 	skillEditCmd.Flags().StringVarP(&skillStatus, "status", "s", "", "skill status")
 	skillEditCmd.Flags().StringVarP(&skillTags, "tags", "t", "", "comma-separated tags")
+
+	skillSuggestResourcesCmd.Flags().StringVar(&skillSuggestTargetLevel, "target-level", "", "target proficiency level (defaults to next level up)")
+	skillSuggestResourcesCmd.Flags().StringVar(&skillSuggestStyle, "style", "project-based", "learning style (top-down, bottom-up, project-based)")
+	skillSuggestResourcesCmd.Flags().StringVar(&skillSuggestBudget, "budget", "any", "resource budget (free, paid, any)")
+	skillSuggestResourcesCmd.Flags().StringVar(&skillSuggestProvider, "provider", "gemini", "AI provider (gemini, openai)")
+	skillSuggestResourcesCmd.Flags().StringVar(&skillSuggestModel, "model", "", "model override")
+	skillSuggestResourcesCmd.Flags().BoolVar(&skillSuggestSave, "save", false, "save suggested resources to repository")
 }
 
 func runSkillCreate(cmd *cobra.Command, args []string) error {
@@ -401,4 +438,139 @@ func runSkillDelete(cmd *cobra.Command, args []string) error {
 
 	PrintSuccess(fmt.Sprintf("Deleted skill %s", id))
 	return nil
+}
+
+func runSkillSuggestResources(cmd *cobra.Command, args []string) error {
+	skillID := core.EntityID(args[0])
+
+	// Load skill
+	skill, err := skillRepo.GetByIDWithBody(skillID)
+	if err != nil {
+		return fmt.Errorf("skill '%s' not found: %w", skillID, err)
+	}
+
+	// Determine current and target levels
+	currentLevel := skill.Level
+	var targetLevel core.ProficiencyLevel
+
+	if skillSuggestTargetLevel != "" {
+		targetLevel = core.ProficiencyLevel(skillSuggestTargetLevel)
+		if !targetLevel.IsValid() {
+			return fmt.Errorf("invalid target level: %s (must be beginner, intermediate, advanced, or expert)", skillSuggestTargetLevel)
+		}
+	} else {
+		// Default to next level up
+		targetLevel = getNextLevel(currentLevel)
+	}
+
+	// Initialize AI client
+	aiConfig := ai.Config{
+		Provider:    skillSuggestProvider,
+		Model:       skillSuggestModel,
+		Temperature: 0.7,
+		MaxTokens:   4000,
+	}
+
+	if err := aiConfig.Validate(); err != nil {
+		return fmt.Errorf("AI configuration error: %w", err)
+	}
+
+	client, err := aifactory.NewClient(aiConfig)
+	if err != nil {
+		return fmt.Errorf("failed to initialize AI client: %w", err)
+	}
+
+	// Show progress
+	fmt.Printf("🤖 Suggesting resources for: %s\n", skill.Title)
+	fmt.Printf("   Current Level: %s\n", currentLevel)
+	fmt.Printf("   Target Level: %s\n", targetLevel)
+	fmt.Printf("   Learning Style: %s\n", skillSuggestStyle)
+	fmt.Printf("   Budget: %s\n", skillSuggestBudget)
+	fmt.Printf("   Provider: %s\n", client.Provider())
+	fmt.Println()
+	fmt.Println("⏳ Finding best resources...")
+
+	// Request resource suggestions
+	req := ai.ResourceSuggestionRequest{
+		Skill:         skill,
+		CurrentLevel:  currentLevel,
+		TargetLevel:   targetLevel,
+		LearningStyle: skillSuggestStyle,
+		Budget:        skillSuggestBudget,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+
+	resp, err := client.SuggestResources(ctx, req)
+	if err != nil {
+		return fmt.Errorf("failed to suggest resources: %w", err)
+	}
+
+	// Optionally save resources
+	if skillSuggestSave {
+		for _, resource := range resp.Resources {
+			if err := resourceRepo.Create(resource); err != nil {
+				PrintWarning(fmt.Sprintf("Failed to save resource %s: %v", resource.ID, err))
+			}
+		}
+	}
+
+	// Display suggestions
+	displayResourceSuggestions(resp, skillSuggestSave)
+
+	return nil
+}
+
+func getNextLevel(current core.ProficiencyLevel) core.ProficiencyLevel {
+	switch current {
+	case core.LevelBeginner:
+		return core.LevelIntermediate
+	case core.LevelIntermediate:
+		return core.LevelAdvanced
+	case core.LevelAdvanced:
+		return core.LevelExpert
+	case core.LevelExpert:
+		return core.LevelExpert // Already at max
+	default:
+		return core.LevelIntermediate
+	}
+}
+
+func displayResourceSuggestions(resp *ai.ResourceSuggestionResponse, saved bool) {
+	fmt.Println()
+	if saved {
+		PrintSuccess(fmt.Sprintf("✨ Found %d resources and saved them to your repository!", len(resp.Resources)))
+	} else {
+		PrintSuccess(fmt.Sprintf("✨ Found %d recommended resources!", len(resp.Resources)))
+	}
+	fmt.Println()
+
+	for i, resource := range resp.Resources {
+		fmt.Printf("%d. %s\n", i+1, resource.Title)
+		fmt.Printf("   Type: %s | Estimated Hours: %.1f\n", resource.Type, resource.EstimatedHours)
+		if resource.Author != "" {
+			fmt.Printf("   Author: %s\n", resource.Author)
+		}
+		if resource.URL != "" {
+			fmt.Printf("   URL: %s\n", resource.URL)
+		}
+		if resource.Body != "" {
+			fmt.Printf("   %s\n", resource.Body)
+		}
+		if saved {
+			fmt.Printf("   ID: %s\n", resource.ID)
+		}
+		fmt.Println()
+	}
+
+	if resp.Reasoning != "" {
+		fmt.Println("💡 AI Reasoning:")
+		fmt.Printf("   %s\n", resp.Reasoning)
+		fmt.Println()
+	}
+
+	if !saved {
+		fmt.Println("💾 Tip: Use --save flag to save these resources to your repository")
+	}
 }

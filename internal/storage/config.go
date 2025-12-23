@@ -24,9 +24,13 @@ type UserConfig struct {
 }
 
 type AIConfig struct {
-	Provider string `yaml:"provider"`
-	Model    string `yaml:"model"`
-	APIKey   string `yaml:"apiKey,omitempty"`
+	Provider      string  `yaml:"provider"`         // gemini, openai, anthropic, local
+	Model         string  `yaml:"model"`            // model name (uses provider default if empty)
+	APIKey        string  `yaml:"apiKey,omitempty"` // optional, prefers env var
+	Temperature   float32 `yaml:"temperature"`      // 0.0 - 1.0, controls randomness
+	MaxTokens     int     `yaml:"maxTokens"`        // max output tokens
+	DefaultStyle  string  `yaml:"defaultStyle"`     // learning style preference
+	DefaultBudget string  `yaml:"defaultBudget"`    // resource budget preference
 }
 
 type GitConfig struct {
@@ -60,9 +64,13 @@ func DefaultConfig() *Config {
 			Email: "",
 		},
 		AI: AIConfig{
-			Provider: "openai",
-			Model:    "gpt-4",
-			APIKey:   "",
+			Provider:      "gemini",
+			Model:         "gemini-3-flash-preview",
+			APIKey:        "",
+			Temperature:   0.7,
+			MaxTokens:     8000,
+			DefaultStyle:  "project-based",
+			DefaultBudget: "any",
 		},
 		Git: GitConfig{
 			AutoCommit:            true,
@@ -148,13 +156,47 @@ func (c *Config) Validate() error {
 
 	if c.AI.Provider != "" {
 		validProviders := map[string]bool{
+			"gemini":    true,
 			"openai":    true,
 			"anthropic": true,
-			"google":    true,
 			"local":     true,
 		}
 		if !validProviders[c.AI.Provider] {
-			return errors.New("invalid AI provider")
+			return errors.New("invalid AI provider (must be: gemini, openai, anthropic, or local)")
+		}
+	}
+
+	// Validate AI temperature
+	if c.AI.Temperature < 0 || c.AI.Temperature > 1 {
+		return errors.New("AI temperature must be between 0.0 and 1.0")
+	}
+
+	// Validate AI max tokens
+	if c.AI.MaxTokens < 100 || c.AI.MaxTokens > 100000 {
+		return errors.New("AI max tokens must be between 100 and 100000")
+	}
+
+	// Validate learning style
+	if c.AI.DefaultStyle != "" {
+		validStyles := map[string]bool{
+			"top-down":      true,
+			"bottom-up":     true,
+			"project-based": true,
+		}
+		if !validStyles[c.AI.DefaultStyle] {
+			return errors.New("invalid learning style (must be: top-down, bottom-up, or project-based)")
+		}
+	}
+
+	// Validate budget
+	if c.AI.DefaultBudget != "" {
+		validBudgets := map[string]bool{
+			"free": true,
+			"paid": true,
+			"any":  true,
+		}
+		if !validBudgets[c.AI.DefaultBudget] {
+			return errors.New("invalid budget (must be: free, paid, or any)")
 		}
 	}
 

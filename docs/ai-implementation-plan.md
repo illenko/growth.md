@@ -1,7 +1,7 @@
 # AI Integration Implementation Plan
 
 **Created**: 2025-12-23
-**Status**: In Progress - Phase 1 Complete ✅, Moving to Phase 2
+**Status**: In Progress - Phase 1 & 2 Complete ✅, Ready for Testing
 **Goal**: Add AI-powered learning path generation and MCP server integration
 
 ## Overview
@@ -175,10 +175,10 @@ func NewClient(cfg ai.Config) (*Client, error) {
         return nil, fmt.Errorf("failed to create Gemini client: %w", err)
     }
 
-    // Select model (default: gemini-2.0-flash-exp)
+    // Select model (default: gemini-3-flash-preview)
     modelName := cfg.Model
     if modelName == "" {
-        modelName = "gemini-2.0-flash-exp"
+        modelName = "gemini-3-flash-preview"
     }
 
     model := client.GenerativeModel(modelName)
@@ -752,7 +752,7 @@ type AIConfig struct {
 ai:
   provider: gemini
   api_key: ""  # Leave empty, use env var
-  model: gemini-2.0-flash-exp
+  model: gemini-3-flash-preview
   temperature: 0.7
   max_tokens: 8000
   default_style: project-based
@@ -1193,10 +1193,11 @@ See [MCP Setup Guide](docs/mcp-setup.md) for details.
 - [x] Code compiles successfully ✅
 
 ### Week 2: CLI Integration
-- [ ] Phase 2.1: Path Generation Command ✅
-- [ ] Phase 2.2: Resource Suggestion Command ✅
-- [ ] Phase 2.4: AI Config ✅
-- [ ] Manual testing with real API ✅
+- [x] Phase 2.1: Path Generation Command ✅
+- [x] Phase 2.2: Resource Suggestion Command ✅
+- [x] Phase 2.3: Progress Analysis Command ✅
+- [x] Phase 2.4: AI Config ✅
+- [ ] Manual testing with real API
 
 ### Week 3: MCP Server
 - [ ] Phase 3.1: MCP Research ✅

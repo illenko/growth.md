@@ -35,10 +35,10 @@ func NewClient(cfg ai.Config) (*Client, error) {
 		}
 	}
 
-	// Select model (default: gemini-2.0-flash-exp)
+	// Select model (default: gemini-3-flash-preview)
 	modelName := cfg.Model
 	if modelName == "" {
-		modelName = "gemini-2.0-flash-exp"
+		modelName = "gemini-3-flash-preview"
 	}
 
 	model := client.GenerativeModel(modelName)

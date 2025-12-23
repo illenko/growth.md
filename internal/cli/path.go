@@ -1,9 +1,13 @@
 package cli
 
 import (
+	"context"
 	"fmt"
 	"strings"
+	"time"
 
+	"github.com/illenko/growth.md/internal/ai"
+	"github.com/illenko/growth.md/internal/aifactory"
 	"github.com/illenko/growth.md/internal/core"
 	"github.com/spf13/cobra"
 )
@@ -14,6 +18,13 @@ var (
 	pathTags       string
 	pathTitle      string
 	pathFilterType string
+
+	// Path generate flags
+	pathGenerateStyle      string
+	pathGenerateTime       string
+	pathGenerateBackground string
+	pathGenerateProvider   string
+	pathGenerateModel      string
 )
 
 var pathCmd = &cobra.Command{
@@ -98,6 +109,23 @@ Examples:
 	RunE:    runPathDelete,
 }
 
+var pathGenerateCmd = &cobra.Command{
+	Use:   "generate <goal-id>",
+	Short: "Generate a learning path using AI",
+	Long: `Generate a personalized learning path for a goal using AI.
+
+The AI will analyze your goal, current skills, and preferences to create
+a structured learning path with phases, milestones, and resource recommendations.
+
+Examples:
+  growth path generate goal-001
+  growth path generate goal-001 --style top-down --time "10 hours/week"
+  growth path generate goal-001 --background "I have 5 years Python experience"
+  growth path generate goal-001 --provider gemini --model gemini-3-flash-preview`,
+	Args: cobra.ExactArgs(1),
+	RunE: runPathGenerate,
+}
+
 func init() {
 	rootCmd.AddCommand(pathCmd)
 	pathCmd.AddCommand(pathCreateCmd)
@@ -105,6 +133,7 @@ func init() {
 	pathCmd.AddCommand(pathViewCmd)
 	pathCmd.AddCommand(pathEditCmd)
 	pathCmd.AddCommand(pathDeleteCmd)
+	pathCmd.AddCommand(pathGenerateCmd)
 
 	pathCreateCmd.Flags().StringVarP(&pathType, "type", "t", "", "path type (manual, ai-generated)")
 	pathCreateCmd.Flags().StringVar(&pathTags, "tags", "", "comma-separated tags")
@@ -115,6 +144,12 @@ func init() {
 	pathEditCmd.Flags().StringVar(&pathTitle, "title", "", "path title")
 	pathEditCmd.Flags().StringVarP(&pathStatus, "status", "s", "", "path status")
 	pathEditCmd.Flags().StringVar(&pathTags, "tags", "", "comma-separated tags")
+
+	pathGenerateCmd.Flags().StringVar(&pathGenerateStyle, "style", "project-based", "learning style (top-down, bottom-up, project-based)")
+	pathGenerateCmd.Flags().StringVar(&pathGenerateTime, "time", "5 hours/week", "time commitment (e.g., '10 hours/week')")
+	pathGenerateCmd.Flags().StringVar(&pathGenerateBackground, "background", "", "additional background context")
+	pathGenerateCmd.Flags().StringVar(&pathGenerateProvider, "provider", "gemini", "AI provider (gemini, openai)")
+	pathGenerateCmd.Flags().StringVar(&pathGenerateModel, "model", "", "model override (uses provider default if not specified)")
 }
 
 func runPathCreate(cmd *cobra.Command, args []string) error {
@@ -322,4 +357,169 @@ func runPathDelete(cmd *cobra.Command, args []string) error {
 
 	PrintSuccess(fmt.Sprintf("Deleted path %s", id))
 	return nil
+}
+
+func runPathGenerate(cmd *cobra.Command, args []string) error {
+	goalID := core.EntityID(args[0])
+
+	// Load goal
+	goal, err := goalRepo.GetByIDWithBody(goalID)
+	if err != nil {
+		return fmt.Errorf("goal '%s' not found: %w", goalID, err)
+	}
+
+	// Load current skills
+	skills, err := skillRepo.GetAll()
+	if err != nil {
+		return fmt.Errorf("failed to load skills: %w", err)
+	}
+
+	// Initialize AI client
+	aiConfig := ai.Config{
+		Provider:    pathGenerateProvider,
+		Model:       pathGenerateModel,
+		Temperature: 0.7,
+		MaxTokens:   8000,
+	}
+
+	if err := aiConfig.Validate(); err != nil {
+		return fmt.Errorf("AI configuration error: %w", err)
+	}
+
+	client, err := aifactory.NewClient(aiConfig)
+	if err != nil {
+		return fmt.Errorf("failed to initialize AI client: %w", err)
+	}
+
+	// Show progress
+	fmt.Printf("🤖 Generating learning path for: %s\n", goal.Title)
+	fmt.Printf("   Provider: %s\n", client.Provider())
+	if pathGenerateModel != "" {
+		fmt.Printf("   Model: %s\n", pathGenerateModel)
+	}
+	fmt.Printf("   Style: %s\n", pathGenerateStyle)
+	fmt.Printf("   Time Commitment: %s\n", pathGenerateTime)
+	fmt.Println()
+	fmt.Println("⏳ Analyzing your goal and skills...")
+
+	// Generate path
+	req := ai.PathGenerationRequest{
+		Goal:           goal,
+		CurrentSkills:  skills,
+		Background:     pathGenerateBackground,
+		LearningStyle:  pathGenerateStyle,
+		TimeCommitment: pathGenerateTime,
+		TargetDate:     goal.TargetDate,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+
+	resp, err := client.GenerateLearningPath(ctx, req)
+	if err != nil {
+		return fmt.Errorf("failed to generate path: %w", err)
+	}
+
+	// Save path and related entities
+	if err := saveGeneratedPath(resp, goalID); err != nil {
+		return fmt.Errorf("failed to save path: %w", err)
+	}
+
+	// Display summary
+	displayPathSummary(resp)
+
+	return nil
+}
+
+func saveGeneratedPath(resp *ai.PathGenerationResponse, goalID core.EntityID) error {
+	// Save the main path
+	if err := pathRepo.Create(resp.Path); err != nil {
+		return fmt.Errorf("failed to save path: %w", err)
+	}
+
+	// Save phases
+	for _, phase := range resp.Phases {
+		if err := phaseRepo.Create(phase); err != nil {
+			return fmt.Errorf("failed to save phase %s: %w", phase.ID, err)
+		}
+	}
+
+	// Save resources
+	for _, resource := range resp.Resources {
+		if err := resourceRepo.Create(resource); err != nil {
+			return fmt.Errorf("failed to save resource %s: %w", resource.ID, err)
+		}
+	}
+
+	// Save milestones
+	for _, milestone := range resp.Milestones {
+		if err := milestoneRepo.Create(milestone); err != nil {
+			return fmt.Errorf("failed to save milestone %s: %w", milestone.ID, err)
+		}
+	}
+
+	// Link path to goal
+	goal, err := goalRepo.GetByIDWithBody(goalID)
+	if err == nil {
+		goal.LearningPaths = append(goal.LearningPaths, resp.Path.ID)
+		if err := goalRepo.Update(goal); err != nil {
+			// Non-fatal: path is already created
+			PrintWarning(fmt.Sprintf("Failed to link path to goal: %v", err))
+		}
+	}
+
+	return nil
+}
+
+func displayPathSummary(resp *ai.PathGenerationResponse) {
+	fmt.Println()
+	PrintSuccess("✨ Learning path generated successfully!")
+	fmt.Println()
+
+	fmt.Printf("📚 Path: %s (ID: %s)\n", resp.Path.Title, resp.Path.ID)
+	fmt.Printf("   %s\n", resp.Path.Body)
+	fmt.Println()
+
+	fmt.Printf("📅 Phases: %d\n", len(resp.Phases))
+	for i, phase := range resp.Phases {
+		fmt.Printf("   %d. %s (%s)\n", i+1, phase.Title, phase.EstimatedDuration)
+		fmt.Printf("      %s\n", phase.Body)
+		if len(phase.RequiredSkills) > 0 {
+			fmt.Printf("      Required: %d skills\n", len(phase.RequiredSkills))
+		}
+		if len(phase.Milestones) > 0 {
+			fmt.Printf("      Milestones: %d\n", len(phase.Milestones))
+		}
+	}
+	fmt.Println()
+
+	fmt.Printf("📖 Resources: %d\n", len(resp.Resources))
+	for i, resource := range resp.Resources {
+		if i < 5 { // Show first 5
+			fmt.Printf("   • %s (%s) - %.1f hours\n", resource.Title, resource.Type, resource.EstimatedHours)
+		}
+	}
+	if len(resp.Resources) > 5 {
+		fmt.Printf("   ... and %d more\n", len(resp.Resources)-5)
+	}
+	fmt.Println()
+
+	fmt.Printf("🎯 Milestones: %d\n", len(resp.Milestones))
+	for i, milestone := range resp.Milestones {
+		if i < 3 { // Show first 3
+			fmt.Printf("   • %s (%s)\n", milestone.Title, milestone.Type)
+		}
+	}
+	if len(resp.Milestones) > 3 {
+		fmt.Printf("   ... and %d more\n", len(resp.Milestones)-3)
+	}
+	fmt.Println()
+
+	if resp.Reasoning != "" {
+		fmt.Println("💡 AI Reasoning:")
+		fmt.Printf("   %s\n", resp.Reasoning)
+		fmt.Println()
+	}
+
+	fmt.Printf("View full path with: growth path view %s\n", resp.Path.ID)
 }

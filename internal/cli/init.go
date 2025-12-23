@@ -130,7 +130,7 @@ func promptForConfig() (*storage.Config, error) {
 	} else if config.AI.Provider == "anthropic" {
 		config.AI.Model = "claude-3-5-sonnet-20241022"
 	} else if config.AI.Provider == "google" {
-		config.AI.Model = "gemini-2.0-flash-exp"
+		config.AI.Model = "gemini-3-flash-preview"
 	}
 
 	fmt.Print("\nEnable auto-commit to Git? (y/n) [y]: ")

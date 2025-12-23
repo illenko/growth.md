@@ -60,7 +60,7 @@ func (c *Config) loadAPIKeyFromEnv() string {
 func DefaultConfig() Config {
 	return Config{
 		Provider:    "gemini",
-		Model:       "gemini-2.0-flash-exp",
+		Model:       "gemini-3-flash-preview",
 		Temperature: 0.7,
 		MaxTokens:   8000,
 	}
