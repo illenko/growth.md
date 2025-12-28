@@ -510,6 +510,13 @@ func runSkillSuggestResources(cmd *cobra.Command, args []string) error {
 	// Optionally save resources
 	if skillSuggestSave {
 		for _, resource := range resp.Resources {
+			newID, err := GenerateNextID("resource")
+			if err != nil {
+				PrintWarning(fmt.Sprintf("Failed to generate ID for resource: %v", err))
+				continue
+			}
+			resource.ID = newID
+
 			if err := resourceRepo.Create(resource); err != nil {
 				PrintWarning(fmt.Sprintf("Failed to save resource %s: %v", resource.ID, err))
 			}

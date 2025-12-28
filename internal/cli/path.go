@@ -432,6 +432,11 @@ func runPathGenerate(cmd *cobra.Command, args []string) error {
 }
 
 func saveGeneratedPath(resp *ai.PathGenerationResponse, goalID core.EntityID) error {
+	// Generate proper sequential IDs to avoid conflicts
+	if err := reassignGeneratedIDs(resp); err != nil {
+		return fmt.Errorf("failed to assign IDs: %w", err)
+	}
+
 	// Save the main path
 	if err := pathRepo.Create(resp.Path); err != nil {
 		return fmt.Errorf("failed to save path: %w", err)
@@ -469,6 +474,90 @@ func saveGeneratedPath(resp *ai.PathGenerationResponse, goalID core.EntityID) er
 	}
 
 	return nil
+}
+
+func reassignGeneratedIDs(resp *ai.PathGenerationResponse) error {
+	// Map old IDs to new IDs for references
+	milestoneIDMap := make(map[core.EntityID]core.EntityID)
+	phaseIDMap := make(map[core.EntityID]core.EntityID)
+
+	// Generate new path ID
+	newPathID, err := GenerateNextID("path")
+	if err != nil {
+		return fmt.Errorf("failed to generate path ID: %w", err)
+	}
+	resp.Path.ID = newPathID
+
+	if len(resp.Phases) > 0 {
+		startPhaseID, err := GenerateNextID("phase")
+		if err != nil {
+			return fmt.Errorf("failed to generate phase ID: %w", err)
+		}
+		phaseCounter := extractIDNumber(startPhaseID)
+
+		for _, phase := range resp.Phases {
+			oldPhaseID := phase.ID
+			newPhaseID := core.EntityID(fmt.Sprintf("phase-%03d", phaseCounter))
+			phaseIDMap[oldPhaseID] = newPhaseID
+			phase.ID = newPhaseID
+			phase.PathID = newPathID
+			phaseCounter++
+		}
+	}
+
+	if len(resp.Resources) > 0 {
+		startResourceID, err := GenerateNextID("resource")
+		if err != nil {
+			return fmt.Errorf("failed to generate resource ID: %w", err)
+		}
+		resourceCounter := extractIDNumber(startResourceID)
+
+		for _, resource := range resp.Resources {
+			newResourceID := core.EntityID(fmt.Sprintf("resource-%03d", resourceCounter))
+			resource.ID = newResourceID
+			resourceCounter++
+		}
+	}
+
+	if len(resp.Milestones) > 0 {
+		startMilestoneID, err := GenerateNextID("milestone")
+		if err != nil {
+			return fmt.Errorf("failed to generate milestone ID: %w", err)
+		}
+		milestoneCounter := extractIDNumber(startMilestoneID)
+
+		for _, milestone := range resp.Milestones {
+			oldMilestoneID := milestone.ID
+			newMilestoneID := core.EntityID(fmt.Sprintf("milestone-%03d", milestoneCounter))
+			milestoneIDMap[oldMilestoneID] = newMilestoneID
+			milestone.ID = newMilestoneID
+			milestoneCounter++
+		}
+	}
+
+	for _, phase := range resp.Phases {
+		var newMilestones []core.EntityID
+		for _, oldMilestoneID := range phase.Milestones {
+			if newMilestoneID, ok := milestoneIDMap[oldMilestoneID]; ok {
+				newMilestones = append(newMilestones, newMilestoneID)
+			}
+		}
+		phase.Milestones = newMilestones
+	}
+
+	return nil
+}
+
+func extractIDNumber(id core.EntityID) int {
+	// Extract number from ID like "phase-001" -> 1
+	parts := strings.Split(string(id), "-")
+	if len(parts) >= 2 {
+		var result int
+		if _, err := fmt.Sscanf(parts[len(parts)-1], "%d", &result); err == nil {
+			return result
+		}
+	}
+	return 1
 }
 
 func displayPathSummary(resp *ai.PathGenerationResponse) {
