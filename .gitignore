@@ -1,52 +1,25 @@
-# Binaries for programs and plugins
+# growth.md specific
+.growth/cache/
+.DS_Store
+
+# Build artifacts
+bin/
+dist/
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
-bin/
-dist/
 
-# Test binary, built with `go test -c`
+# Test artifacts
 *.test
-
-# Output of the go coverage tool
 *.out
 coverage.txt
 coverage.html
 
-# Go workspace file
-go.work
-
-# Dependency directories
-vendor/
-
-# IDE specific files
-.idea/
+# Editor files
 .vscode/
+.idea/
 *.swp
 *.swo
 *~
-.DS_Store
-
-# Compiled Object files
-*.o
-*.a
-
-# Debug files
-debug
-__debug_bin
-
-# Temporary files
-tmp/
-temp/
-
-# Build artifacts
-*.log
-
-# Local configuration (user-specific)
-.env
-.env.local
-
-# Test data
-tests/tmp/

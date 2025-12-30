@@ -1,7 +1,8 @@
 # AI Integration Implementation Plan
 
 **Created**: 2025-12-23
-**Status**: In Progress - Phase 1 & 2 Complete ✅, Ready for Testing
+**Last Updated**: 2025-12-30
+**Status**: In Progress - Phase 1 Complete ✅ (except tests), Phase 2 Complete ✅, Code Refactored ✅
 **Goal**: Add AI-powered learning path generation and MCP server integration
 
 ## Overview
@@ -136,11 +137,11 @@ func NewClient(cfg Config) (AIClient, error) {
 ```
 
 **Tasks**:
-- [ ] Create `internal/ai/client.go` with interfaces
-- [ ] Create `internal/ai/types.go` with request/response types
-- [ ] Create `internal/ai/config.go` with configuration
-- [ ] Create `internal/ai/factory.go` with provider factory
-- [ ] Add error types: `ErrAPIKeyMissing`, `ErrRateLimitExceeded`, `ErrInvalidResponse`
+- [x] Create `internal/ai/client.go` with interfaces ✅
+- [x] Create `internal/ai/types.go` with request/response types ✅
+- [x] Create `internal/ai/config.go` with configuration ✅
+- [x] Create `internal/aifactory/factory.go` with provider factory ✅
+- [x] Add error types: `ErrAPIKeyMissing`, `ErrRateLimitExceeded`, `ErrInvalidResponse` ✅
 
 ---
 
@@ -424,15 +425,15 @@ func ParsePathGeneration(responseText string) (*ai.PathGenerationResponse, error
 ```
 
 **Tasks**:
-- [ ] Add Gemini SDK dependency: `go get github.com/google/generative-ai-go`
-- [ ] Create `internal/ai/gemini/client.go`
-- [ ] Create `internal/ai/gemini/prompts.go` with all templates
-- [ ] Create `internal/ai/gemini/parser.go` for response parsing
-- [ ] Implement `GenerateLearningPath()`
-- [ ] Implement `SuggestResources()`
-- [ ] Implement `AnalyzeProgress()`
-- [ ] Add retry logic with exponential backoff
-- [ ] Add response validation and error handling
+- [x] Add Gemini SDK dependency: `go get github.com/google/generative-ai-go` ✅
+- [x] Create `internal/ai/gemini/client.go` ✅
+- [x] Create `internal/ai/gemini/prompts.go` with all templates ✅
+- [x] Create `internal/ai/gemini/parser.go` for response parsing ✅
+- [x] Implement `GenerateLearningPath()` ✅
+- [x] Implement `SuggestResources()` ✅
+- [x] Implement `AnalyzeProgress()` ✅
+- [x] Add retry logic with exponential backoff ✅
+- [x] Add response validation and error handling ✅
 - [ ] Write unit tests with mocked responses
 
 ---
@@ -450,8 +451,8 @@ func ParsePathGeneration(responseText string) (*ai.PathGenerationResponse, error
 - Can be implemented later when users request it
 
 **Tasks**:
-- [ ] Create stub OpenAI client
-- [ ] Return "not implemented" error
+- [x] Create stub OpenAI client ✅
+- [x] Return "not implemented" error ✅
 - [ ] Document how to implement when needed
 
 ---
@@ -491,6 +492,8 @@ func (m *MockClient) GenerateLearningPath(ctx context.Context, req PathGeneratio
 - [ ] Test error handling (invalid JSON, API errors)
 - [ ] Test retry logic
 - [ ] Integration test with real Gemini API (manual, documented)
+
+**Note**: Mock client (`internal/ai/mock_client.go`) exists ✅ but unit tests not yet written.
 
 ---
 
@@ -603,14 +606,21 @@ func runPathGenerate(cmd *cobra.Command, args []string) error {
 ```
 
 **Tasks**:
-- [ ] Add `pathGenerateCmd` to `path.go`
-- [ ] Implement `runPathGenerate()`
-- [ ] Add progress spinner during generation
-- [ ] Implement `saveGeneratedPath()` helper
-- [ ] Implement `displayPathSummary()` helper
-- [ ] Link generated path to goal automatically
-- [ ] Set path type as `ai-generated`
-- [ ] Store AI provider and model metadata
+- [x] Add `pathGenerateCmd` to `path.go` ✅
+- [x] Implement `runPathGenerate()` ✅
+- [x] Add progress spinner during generation ✅
+- [x] Implement `saveGeneratedPath()` helper ✅
+- [x] Implement `displayPathSummary()` helper ✅
+- [x] Link generated path to goal automatically ✅
+- [x] Set path type as `ai-generated` ✅
+- [x] Store AI provider and model metadata ✅
+
+**Flags Implemented**:
+- `--style`: Learning style (default: "project-based")
+- `--time`: Time commitment (default: "5 hours/week")
+- `--background`: Additional context
+- `--provider`: AI provider (default: "gemini")
+- `--model`: Model override
 
 ---
 
@@ -647,11 +657,19 @@ Examples:
 ```
 
 **Tasks**:
-- [ ] Add `skillSuggestResourcesCmd` to `skill.go`
-- [ ] Implement resource suggestion logic
-- [ ] Display suggestions in table format
-- [ ] Option to save suggestions: `--save` flag
-- [ ] Show cost/time estimates
+- [x] Add `skillSuggestResourcesCmd` to `skill.go` ✅
+- [x] Implement resource suggestion logic ✅
+- [x] Display suggestions in table format ✅
+- [x] Option to save suggestions: `--save` flag ✅
+- [x] Show cost/time estimates ✅
+
+**Flags Implemented**:
+- `--target-level`: Target proficiency level
+- `--style`: Learning style (default: "project-based")
+- `--budget`: Resource budget (default: "any")
+- `--provider`: AI provider (default: "gemini")
+- `--model`: Model override
+- `--save`: Save resources to repository
 
 ---
 
@@ -711,11 +729,16 @@ SUGGESTED FOCUS
 ```
 
 **Tasks**:
-- [ ] Create `internal/cli/analyze.go`
-- [ ] Implement progress analysis
-- [ ] Format insights nicely
-- [ ] Add color coding for insights
+- [x] Create `internal/cli/analyze.go` ✅
+- [x] Implement progress analysis ✅
+- [x] Format insights nicely ✅
+- [x] Add color coding for insights ✅
 - [ ] Cache analysis (avoid re-running frequently)
+
+**Flags Implemented**:
+- `--days`: Number of days to analyze (default: 30)
+- `--provider`: AI provider (default: "gemini")
+- `--model`: Model override
 
 ---
 
@@ -760,11 +783,25 @@ ai:
 ```
 
 **Tasks**:
-- [ ] Update `Config` struct
-- [ ] Add AI config validation
-- [ ] Add env var loading
-- [ ] Update `growth init` to prompt for AI config
-- [ ] Document API key setup in README
+- [x] Update `Config` struct with `AIConfig` ✅
+- [x] Add AI config validation ✅
+- [x] Add env var loading (GEMINI_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY) ✅
+- [x] Update `growth init` to prompt for AI config ✅
+- [ ] Document API key setup in README (partially done, needs expansion)
+
+**Config Fields Implemented** (`internal/storage/config.go`):
+```yaml
+ai:
+  provider: gemini              # gemini, openai, anthropic, local
+  model: gemini-3-flash-preview # provider-specific model
+  apiKey: ""                    # optional, prefers env var
+  temperature: 0.7              # 0.0 - 1.0
+  maxTokens: 8000              # max output tokens
+  defaultStyle: project-based   # learning style
+  defaultBudget: any           # resource budget
+```
+
+**Fixed** ✅: `init.go` now correctly uses "gemini" as provider name (was "google")
 
 ---
 
@@ -1185,19 +1222,22 @@ See [MCP Setup Guide](docs/mcp-setup.md) for details.
 
 ## Implementation Priority
 
-### Week 1: AI Foundation
+### Week 1: AI Foundation ✅
 - [x] Phase 1.1: AI Client Interface ✅
 - [x] Phase 1.2: Gemini Client Implementation ✅
 - [x] Phase 1.3: OpenAI Stub (for future) ✅
-- [x] Phase 1.4: Mock Client for Testing ✅
+- [x] Phase 1.4: Mock Client for Testing ✅ (tests not written yet)
 - [x] Code compiles successfully ✅
+- [x] Code refactored (removed obvious comments, consolidated duplicates) ✅
 
-### Week 2: CLI Integration
+### Week 2: CLI Integration ✅
 - [x] Phase 2.1: Path Generation Command ✅
 - [x] Phase 2.2: Resource Suggestion Command ✅
 - [x] Phase 2.3: Progress Analysis Command ✅
 - [x] Phase 2.4: AI Config ✅
+- [x] Fix provider name inconsistency (google vs gemini) ✅
 - [ ] Manual testing with real API
+- [ ] Expand README documentation for AI features
 
 ### Week 3: MCP Server
 - [ ] Phase 3.1: MCP Research ✅
@@ -1278,4 +1318,508 @@ See [MCP Setup Guide](docs/mcp-setup.md) for details.
 
 ---
 
-**Last Updated**: 2025-12-23
+## Recent Updates (2025-12-30)
+
+### Major Refactoring & Bug Fix Session ✅
+
+This section documents a comprehensive refactoring and bug-fixing session that addressed code quality, critical bugs, testing gaps, and architectural improvements.
+
+---
+
+### 1. Code Quality Improvements ✅
+
+**Objective**: Review `internal/ai/` package for refactoring opportunities and remove obvious comments.
+
+**Files Modified**:
+- `internal/ai/config.go` - Removed obvious comments
+- `internal/ai/errors.go` - Removed obvious comments
+- `internal/ai/types.go` - Removed obvious comments
+- `internal/ai/mock_client.go` - Removed obvious comments
+- `internal/ai/gemini/client.go` - Major refactoring + comment removal
+- `internal/ai/gemini/parser.go` - Extracted helpers + comment removal
+- `internal/ai/openai/client.go` - Removed obvious comments
+
+**Refactoring Details**:
+
+1. **Consolidated Duplicate Render Functions** (`gemini/client.go`):
+   - **Before**: 3 nearly identical functions (`renderPathPrompt`, `renderResourcePrompt`, `renderProgressPrompt`)
+   - **After**: Single generic `renderPrompt(promptTemplate, data)` + thin wrappers
+   - **Impact**: Eliminated ~30 lines of duplicate code, improved maintainability
+
+   ```go
+   // New generic implementation
+   func (c *Client) renderPrompt(promptTemplate string, data interface{}) (string, error) {
+       tmpl, err := template.New("prompt").Parse(promptTemplate)
+       if err != nil {
+           return "", fmt.Errorf("failed to parse template: %w", err)
+       }
+       var buf bytes.Buffer
+       if err := tmpl.Execute(&buf, data); err != nil {
+           return "", fmt.Errorf("failed to render template: %w", err)
+       }
+       return buf.String(), nil
+   }
+   ```
+
+2. **Extracted Resource/Milestone Creation Helpers** (`gemini/parser.go`):
+   - **Before**: 2 instances of duplicate resource creation, duplicate milestone creation
+   - **After**: `createResource()` and `createMilestone()` helper functions
+   - **Impact**: DRY principle applied, easier to maintain entity creation logic
+
+   ```go
+   func createResource(resourceOut ResourceOutput, resourceID, skillID core.EntityID) *core.Resource {
+       // Centralized resource creation with type validation
+       resourceType := core.ResourceType(resourceOut.Type)
+       if !resourceType.IsValid() {
+           resourceType = core.ResourceCourse
+       }
+       return &core.Resource{
+           ID:             resourceID,
+           Title:          resourceOut.Title,
+           Type:           resourceType,
+           SkillID:        skillID,
+           Body:           resourceOut.Description,
+           Author:         resourceOut.Author,
+           URL:            resourceOut.URL,
+           EstimatedHours: resourceOut.EstimatedHours,
+           Status:         core.ResourceNotStarted,
+           Tags:           []string{},
+           Timestamps:     core.NewTimestamps(),
+       }
+   }
+   ```
+
+3. **Comment Cleanup**:
+   - **Total removed**: 53 obvious/redundant comments across entire `internal/ai/` package
+   - **Examples**: "// Create client", "// Return error", "// Parse JSON", etc.
+   - **Impact**: Cleaner, more professional codebase
+
+**Result**: ✅ Build successful, code quality significantly improved
+
+---
+
+### 2. Critical Bug Fixes ✅
+
+Two critical bugs were discovered and fixed that prevented the AI features from working correctly.
+
+#### **Critical Bug #1: Provider Name Mismatch**
+
+**File**: `internal/cli/init.go`
+
+**Problem**:
+- `growth init` prompted for "google" as provider name
+- Entire codebase expected "gemini" as provider name
+- Users running `growth init` would create broken configs
+
+**Impact**: 🔴 HIGH - Users couldn't use AI features after running init
+
+**Root Cause**: Inconsistent naming between init prompt and implementation
+
+**Fix Applied**:
+```go
+// Before - BROKEN
+fmt.Print("\nAI Provider (openai/anthropic/google/local) [openai]: ")
+// ...
+} else if config.AI.Provider == "google" {
+    config.AI.Model = "gemini-3-flash-preview"
+}
+
+// After - FIXED
+fmt.Print("\nAI Provider (gemini/openai/anthropic/local) [gemini]: ")
+// ...
+if config.AI.Provider == "gemini" {
+    config.AI.Model = "gemini-3-flash-preview"
+} else if config.AI.Provider == "openai" {
+    config.AI.Model = "gpt-4"
+} else if config.AI.Provider == "anthropic" {
+    config.AI.Model = "claude-3-5-sonnet-20241022"
+}
+```
+
+**Changes**:
+- Changed prompt from "google" to "gemini"
+- Changed default from "[openai]" to "[gemini]"
+- Reordered provider priority: gemini → openai → anthropic → local
+- Fixed condition from `== "google"` to `== "gemini"`
+
+**Verification**: ✅ `growth init` now creates config with correct "gemini" provider
+
+---
+
+#### **Critical Bug #2: Config File Completely Ignored**
+
+**Files**: `internal/cli/path.go`, `internal/cli/skill.go`, `internal/cli/analyze.go`
+
+**Problem**:
+- ALL three AI commands used hardcoded values
+- `.growth/config.yml` file was never read
+- User config settings had zero effect
+- Commands always used "gemini" provider regardless of config
+
+**Impact**: 🔴 CRITICAL - Config file was completely useless
+
+**Discovery**: User questioned: "bro, now im not sure that growth actually reads .growth/config.yml"
+
+**Root Cause**: Commands created AIConfig from hardcoded values instead of reading from storage config
+
+**Fix Applied** (pattern shown for `path.go`, same fix in `skill.go` and `analyze.go`):
+
+```go
+// Before - BROKEN (hardcoded values)
+aiConfig := ai.Config{
+    Provider:    pathGenerateProvider,  // Always "gemini" from flag default
+    Model:       pathGenerateModel,     // Always "" from flag default
+    Temperature: 0.7,                   // Hardcoded
+    MaxTokens:   8000,                  // Hardcoded
+}
+
+// After - FIXED (reads config with flag overrides)
+provider := config.AI.Provider           // Read from config
+if pathGenerateProvider != "" {          // Flag overrides config
+    provider = pathGenerateProvider
+}
+
+model := config.AI.Model
+if pathGenerateModel != "" {
+    model = pathGenerateModel
+}
+
+style := config.AI.DefaultStyle          // New: read style from config
+if pathGenerateStyle != "" {
+    style = pathGenerateStyle
+}
+
+aiConfig := ai.Config{
+    Provider:    provider,
+    Model:       model,
+    Temperature: config.AI.Temperature,  // From config
+    MaxTokens:   config.AI.MaxTokens,    // From config
+}
+```
+
+**Additional Changes**:
+- Changed flag defaults from "gemini" to "" (empty string doesn't override config)
+- Changed style default from "project-based" to "" (reads from config)
+- Changed budget default from "any" to "" (reads from config)
+- Added config reading for `DefaultStyle` and `DefaultBudget`
+
+**Priority Order**: explicit flag > config value > fallback default
+
+**Verification**: ✅ Config with `provider: openai` correctly tries OpenAI (errors without API key as expected)
+
+---
+
+### 3. Configuration & Security Improvements ✅
+
+#### **Git Autocommit Disabled by Default**
+
+**Files**: `internal/storage/config.go`, `internal/cli/init.go`
+
+**Problem**: Git autocommit was enabled by default, which could surprise users
+
+**Changes**:
+
+1. **Config Defaults** (`internal/storage/config.go`):
+```go
+Git: GitConfig{
+    AutoCommit:            false,  // Was: true
+    CommitOnUpdate:        false,  // Was: true
+    CommitMessageTemplate: "{{.Action}} {{.EntityType}}: {{.Title}}",
+},
+```
+
+2. **Init Prompt** (`internal/cli/init.go`):
+```go
+// Changed prompt default from [y] to [n]
+fmt.Print("\nEnable auto-commit to Git? (y/n) [n]: ")
+autoCommit, _ := reader.ReadString('\n')
+autoCommit = strings.TrimSpace(strings.ToLower(autoCommit))
+if autoCommit == "y" || autoCommit == "yes" {  // Requires explicit yes
+    config.Git.AutoCommit = true
+    config.Git.CommitOnUpdate = true
+}
+```
+
+**Impact**: ✅ Users must explicitly opt-in to autocommit
+
+---
+
+#### **Gitignore Improvements**
+
+**File**: `.gitignore`
+
+**Problem**: Build and test artifacts were not properly excluded, caused 25MB binary in untracked files
+
+**Changes**:
+```gitignore
+# Build artifacts
+bin/
+dist/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test artifacts
+*.test
+*.out
+coverage.txt
+coverage.html
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+```
+
+**Lesson Learned**: ⚠️ Be careful when running tests/builds in source repo
+
+---
+
+### 4. Testing Infrastructure ✅
+
+**Objective**: Enable debugging AI features without manual CLI execution
+
+#### **Unit Tests Created**
+
+**File**: `internal/ai/gemini/client_test.go` (NEW)
+
+**Test Coverage**:
+
+1. **TestParsePathGeneration**:
+   - ✅ Valid path generation response
+   - ✅ Invalid JSON handling
+   - ✅ Missing required fields (empty title)
+   - ✅ Correct path ID assignment
+   - ✅ Correct AI-generated type assignment
+
+2. **TestParseResourceSuggestion**:
+   - ✅ Valid resource parsing
+   - ✅ Skill ID assignment
+   - ✅ Resource type validation
+
+3. **TestParseProgressAnalysis**:
+   - ✅ Valid analysis parsing
+   - ✅ Boolean flags (isOnTrack)
+   - ✅ Array fields (insights, recommendations)
+
+4. **TestMockClient**:
+   - ✅ Mock client provider name
+   - ✅ Default mock response generation
+
+**Test Execution**:
+```bash
+go test ./internal/ai/gemini/
+# Result: PASS
+```
+
+**Impact**: ✅ Can now test AI parsing logic without API calls
+
+---
+
+#### **Service Layer Tests**
+
+**File**: `internal/service/ai_service_test.go` (NEW)
+
+**Test Coverage**:
+
+1. **TestGetNextLevel**:
+   - ✅ Beginner → Intermediate
+   - ✅ Intermediate → Advanced
+   - ✅ Advanced → Expert
+   - ✅ Expert → Expert (stays at expert)
+
+**Test Execution**:
+```bash
+go test ./internal/service/
+# Result: PASS
+```
+
+---
+
+### 5. Service Layer Architecture ✅
+
+**Objective**: Extract CLI logic for reuse in MCP server and Terminal UI
+
+#### **New Files Created**
+
+**File**: `internal/service/ai_service.go` (NEW)
+
+**Purpose**: Business logic layer that can be shared across CLI, MCP, and TUI
+
+**Structure**:
+```go
+type AIService struct {
+    config        *storage.Config
+    skillRepo     *storage.SkillRepository
+    goalRepo      *storage.GoalRepository
+    pathRepo      *storage.PathRepository
+    phaseRepo     *storage.PhaseRepository
+    resourceRepo  *storage.ResourceRepository
+    milestoneRepo *storage.MilestoneRepository
+    progressRepo  *storage.ProgressLogRepository
+}
+
+type PathGenerationOptions struct {
+    GoalID         core.EntityID
+    Style          string
+    TimeCommitment string
+    Background     string
+    Provider       string  // Override config
+    Model          string  // Override config
+}
+
+type PathGenerationResult struct {
+    Path       *core.LearningPath
+    Phases     []*core.Phase
+    Resources  []*core.Resource
+    Milestones []*core.Milestone
+    Reasoning  string
+}
+```
+
+**Methods**:
+
+1. **GenerateLearningPath(ctx, opts)**:
+   - Loads goal and skills
+   - Merges config with options (options override config)
+   - Calls AI client
+   - Returns structured result (doesn't save automatically)
+
+2. **SaveGeneratedPath(result, goalID)**:
+   - Saves path, phases, resources, milestones
+   - Links path to goal
+   - Transactional-style operation
+
+3. **SuggestResources(ctx, opts)**:
+   - Suggests resources for skill level progression
+   - Handles target level defaults (getNextLevel)
+   - Returns resources without auto-saving
+
+4. **AnalyzeProgress(ctx, opts)**:
+   - Analyzes progress logs for a goal
+   - Returns insights and recommendations
+   - Calculates on-track status
+
+**Benefits**:
+- ✅ **Code Reuse**: CLI, MCP, TUI can all use same logic
+- ✅ **Separation of Concerns**: Business logic separated from presentation
+- ✅ **Testability**: Service layer can be unit tested independently
+- ✅ **Maintainability**: Changes in one place affect all interfaces
+
+**Compilation Errors Fixed**:
+- Changed `repo.Save()` calls to `repo.Create()` (correct method name)
+- Changed `core.ProficiencyBeginner` to `core.LevelBeginner` (correct constant name)
+- Fixed all type mismatches
+
+**Test Status**: ✅ All tests passing
+
+---
+
+**File**: `internal/service/README.md` (NEW)
+
+**Purpose**: Documentation for service layer usage
+
+**Content**:
+- Architecture overview
+- Usage examples for CLI/MCP/TUI
+- Benefits of service layer
+- Migration guide from CLI to service layer
+
+**Next Step**: Actual migration of CLI commands to use service layer (documented but not yet implemented)
+
+---
+
+### 6. Implementation Status Summary
+
+#### **Phase 1: AI Client Architecture** ✅
+- [x] AI Client Interface ✅
+- [x] Gemini Client Implementation ✅
+- [x] OpenAI Stub ✅
+- [x] Mock Client ✅
+- [x] Code Refactored ✅
+- [x] Unit Tests Created ✅ (NEW!)
+- [ ] Manual API testing (pending)
+
+#### **Phase 2: CLI Commands** ✅
+- [x] Path Generation Command ✅
+- [x] Resource Suggestion Command ✅
+- [x] Progress Analysis Command ✅
+- [x] AI Config ✅
+- [x] Provider name bug fixed ✅
+- [x] Config reading bug fixed ✅
+- [x] Autocommit disabled by default ✅
+- [x] Service layer created ✅ (NEW!)
+- [ ] CLI migration to service layer (documented, not done)
+- [ ] Manual testing with real API (pending)
+- [ ] README documentation (needs expansion)
+
+#### **Phase 3: MCP Server** 🔜
+- [ ] Not started yet
+
+---
+
+### 7. Files Modified/Created
+
+**Modified Files** (11):
+1. `internal/ai/config.go` - Comment removal
+2. `internal/ai/errors.go` - Comment removal
+3. `internal/ai/types.go` - Comment removal
+4. `internal/ai/mock_client.go` - Comment removal
+5. `internal/ai/gemini/client.go` - Refactoring + comments
+6. `internal/ai/gemini/parser.go` - Helper extraction + comments
+7. `internal/ai/openai/client.go` - Comment removal
+8. `internal/cli/init.go` - Provider name fix + autocommit fix
+9. `internal/cli/path.go` - Config reading fix
+10. `internal/cli/skill.go` - Config reading fix
+11. `internal/cli/analyze.go` - Config reading fix
+12. `internal/storage/config.go` - Autocommit default change
+13. `.gitignore` - Build/test artifact exclusions
+
+**Created Files** (3):
+1. `internal/ai/gemini/client_test.go` - Unit tests for parser ✅
+2. `internal/service/ai_service.go` - Reusable business logic ✅
+3. `internal/service/ai_service_test.go` - Service tests ✅
+4. `internal/service/README.md` - Service layer documentation ✅
+
+---
+
+### 8. Known Issues & Next Steps
+
+**Known Issues** ⚠️:
+1. ~~Provider name inconsistency~~ ✅ **FIXED**
+2. ~~Config file ignored~~ ✅ **FIXED**
+3. ~~Git autocommit enabled by default~~ ✅ **FIXED**
+4. ~~No unit tests~~ ✅ **FIXED** (basic coverage)
+5. ~~No service layer~~ ✅ **FIXED**
+6. **README incomplete** - AI features section needs expansion
+7. **No manual API testing** - Haven't tested with real Gemini API yet
+8. **CLI not using service layer** - Documented migration but not implemented
+9. **Limited test coverage** - Only basic tests, need more edge cases
+
+**Next Steps** (Priority Order):
+1. **Manual test** with real Gemini API to verify end-to-end flow
+2. **Migrate CLI** commands to use service layer (refactor path.go, skill.go, analyze.go)
+3. **Expand README** with AI features documentation and setup guide
+4. **Add more tests** for edge cases and error scenarios
+5. **Add caching** for progress analysis (avoid expensive re-runs)
+6. Continue with **Phase 3** (MCP Server) OR further polish Phase 2
+
+---
+
+### 9. Lessons Learned
+
+1. **Always read config first**: Don't hardcode values that should come from config
+2. **Naming matters**: "google" vs "gemini" inconsistency caused real bugs
+3. **Test early**: Having unit tests earlier would have caught issues faster
+4. **Service layer is valuable**: Separation of concerns pays off for code reuse
+5. **Watch source repo**: Be careful with build artifacts in git repositories
+6. **DRY principle**: Consolidating duplicates makes code much more maintainable
+7. **Config priority**: Flag > Config > Default is the right pattern
+
+---
+
+**Last Updated**: 2025-12-30

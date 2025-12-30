@@ -145,11 +145,11 @@ func init() {
 	pathEditCmd.Flags().StringVarP(&pathStatus, "status", "s", "", "path status")
 	pathEditCmd.Flags().StringVar(&pathTags, "tags", "", "comma-separated tags")
 
-	pathGenerateCmd.Flags().StringVar(&pathGenerateStyle, "style", "project-based", "learning style (top-down, bottom-up, project-based)")
+	pathGenerateCmd.Flags().StringVar(&pathGenerateStyle, "style", "", "learning style (top-down, bottom-up, project-based) - defaults to config")
 	pathGenerateCmd.Flags().StringVar(&pathGenerateTime, "time", "5 hours/week", "time commitment (e.g., '10 hours/week')")
 	pathGenerateCmd.Flags().StringVar(&pathGenerateBackground, "background", "", "additional background context")
-	pathGenerateCmd.Flags().StringVar(&pathGenerateProvider, "provider", "gemini", "AI provider (gemini, openai)")
-	pathGenerateCmd.Flags().StringVar(&pathGenerateModel, "model", "", "model override (uses provider default if not specified)")
+	pathGenerateCmd.Flags().StringVar(&pathGenerateProvider, "provider", "", "AI provider (gemini, openai) - defaults to config")
+	pathGenerateCmd.Flags().StringVar(&pathGenerateModel, "model", "", "model override - defaults to config")
 }
 
 func runPathCreate(cmd *cobra.Command, args []string) error {
@@ -374,12 +374,27 @@ func runPathGenerate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to load skills: %w", err)
 	}
 
-	// Initialize AI client
+	// Initialize AI client - use config defaults, allow flags to override
+	provider := config.AI.Provider
+	if pathGenerateProvider != "" {
+		provider = pathGenerateProvider
+	}
+
+	model := config.AI.Model
+	if pathGenerateModel != "" {
+		model = pathGenerateModel
+	}
+
+	style := config.AI.DefaultStyle
+	if pathGenerateStyle != "" {
+		style = pathGenerateStyle
+	}
+
 	aiConfig := ai.Config{
-		Provider:    pathGenerateProvider,
-		Model:       pathGenerateModel,
-		Temperature: 0.7,
-		MaxTokens:   8000,
+		Provider:    provider,
+		Model:       model,
+		Temperature: config.AI.Temperature,
+		MaxTokens:   config.AI.MaxTokens,
 	}
 
 	if err := aiConfig.Validate(); err != nil {
@@ -397,7 +412,7 @@ func runPathGenerate(cmd *cobra.Command, args []string) error {
 	if pathGenerateModel != "" {
 		fmt.Printf("   Model: %s\n", pathGenerateModel)
 	}
-	fmt.Printf("   Style: %s\n", pathGenerateStyle)
+	fmt.Printf("   Style: %s\n", style)
 	fmt.Printf("   Time Commitment: %s\n", pathGenerateTime)
 	fmt.Println()
 	fmt.Println("⏳ Analyzing your goal and skills...")
@@ -407,7 +422,7 @@ func runPathGenerate(cmd *cobra.Command, args []string) error {
 		Goal:           goal,
 		CurrentSkills:  skills,
 		Background:     pathGenerateBackground,
-		LearningStyle:  pathGenerateStyle,
+		LearningStyle:  style,
 		TimeCommitment: pathGenerateTime,
 		TargetDate:     goal.TargetDate,
 	}

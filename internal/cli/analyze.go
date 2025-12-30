@@ -37,8 +37,8 @@ Examples:
 func init() {
 	rootCmd.AddCommand(analyzeCmd)
 
-	analyzeCmd.Flags().StringVar(&analyzeProvider, "provider", "gemini", "AI provider (gemini, openai)")
-	analyzeCmd.Flags().StringVar(&analyzeModel, "model", "", "model override")
+	analyzeCmd.Flags().StringVar(&analyzeProvider, "provider", "", "AI provider (gemini, openai) - defaults to config")
+	analyzeCmd.Flags().StringVar(&analyzeModel, "model", "", "model override - defaults to config")
 	analyzeCmd.Flags().IntVar(&analyzeDays, "days", 30, "number of days to analyze")
 }
 
@@ -90,12 +90,22 @@ func runAnalyze(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to load skills: %w", err)
 	}
 
-	// Initialize AI client
+	// Initialize AI client - use config defaults, allow flags to override
+	provider := config.AI.Provider
+	if analyzeProvider != "" {
+		provider = analyzeProvider
+	}
+
+	model := config.AI.Model
+	if analyzeModel != "" {
+		model = analyzeModel
+	}
+
 	aiConfig := ai.Config{
-		Provider:    analyzeProvider,
-		Model:       analyzeModel,
-		Temperature: 0.7,
-		MaxTokens:   4000,
+		Provider:    provider,
+		Model:       model,
+		Temperature: config.AI.Temperature,
+		MaxTokens:   config.AI.MaxTokens,
 	}
 
 	if err := aiConfig.Validate(); err != nil {

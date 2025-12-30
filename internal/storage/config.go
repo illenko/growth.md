@@ -73,8 +73,8 @@ func DefaultConfig() *Config {
 			DefaultBudget: "any",
 		},
 		Git: GitConfig{
-			AutoCommit:            true,
-			CommitOnUpdate:        true,
+			AutoCommit:            false,
+			CommitOnUpdate:        false,
 			CommitMessageTemplate: "{{.Action}} {{.EntityType}}: {{.Title}}",
 		},
 		Progress: ProgressConfig{

@@ -154,10 +154,10 @@ func init() {
 	skillEditCmd.Flags().StringVarP(&skillTags, "tags", "t", "", "comma-separated tags")
 
 	skillSuggestResourcesCmd.Flags().StringVar(&skillSuggestTargetLevel, "target-level", "", "target proficiency level (defaults to next level up)")
-	skillSuggestResourcesCmd.Flags().StringVar(&skillSuggestStyle, "style", "project-based", "learning style (top-down, bottom-up, project-based)")
-	skillSuggestResourcesCmd.Flags().StringVar(&skillSuggestBudget, "budget", "any", "resource budget (free, paid, any)")
-	skillSuggestResourcesCmd.Flags().StringVar(&skillSuggestProvider, "provider", "gemini", "AI provider (gemini, openai)")
-	skillSuggestResourcesCmd.Flags().StringVar(&skillSuggestModel, "model", "", "model override")
+	skillSuggestResourcesCmd.Flags().StringVar(&skillSuggestStyle, "style", "", "learning style (top-down, bottom-up, project-based) - defaults to config")
+	skillSuggestResourcesCmd.Flags().StringVar(&skillSuggestBudget, "budget", "", "resource budget (free, paid, any) - defaults to config")
+	skillSuggestResourcesCmd.Flags().StringVar(&skillSuggestProvider, "provider", "", "AI provider (gemini, openai) - defaults to config")
+	skillSuggestResourcesCmd.Flags().StringVar(&skillSuggestModel, "model", "", "model override - defaults to config")
 	skillSuggestResourcesCmd.Flags().BoolVar(&skillSuggestSave, "save", false, "save suggested resources to repository")
 }
 
@@ -463,12 +463,32 @@ func runSkillSuggestResources(cmd *cobra.Command, args []string) error {
 		targetLevel = getNextLevel(currentLevel)
 	}
 
-	// Initialize AI client
+	// Initialize AI client - use config defaults, allow flags to override
+	provider := config.AI.Provider
+	if skillSuggestProvider != "" {
+		provider = skillSuggestProvider
+	}
+
+	model := config.AI.Model
+	if skillSuggestModel != "" {
+		model = skillSuggestModel
+	}
+
+	style := config.AI.DefaultStyle
+	if skillSuggestStyle != "" {
+		style = skillSuggestStyle
+	}
+
+	budget := config.AI.DefaultBudget
+	if skillSuggestBudget != "" {
+		budget = skillSuggestBudget
+	}
+
 	aiConfig := ai.Config{
-		Provider:    skillSuggestProvider,
-		Model:       skillSuggestModel,
-		Temperature: 0.7,
-		MaxTokens:   4000,
+		Provider:    provider,
+		Model:       model,
+		Temperature: config.AI.Temperature,
+		MaxTokens:   config.AI.MaxTokens,
 	}
 
 	if err := aiConfig.Validate(); err != nil {
@@ -484,8 +504,8 @@ func runSkillSuggestResources(cmd *cobra.Command, args []string) error {
 	fmt.Printf("🤖 Suggesting resources for: %s\n", skill.Title)
 	fmt.Printf("   Current Level: %s\n", currentLevel)
 	fmt.Printf("   Target Level: %s\n", targetLevel)
-	fmt.Printf("   Learning Style: %s\n", skillSuggestStyle)
-	fmt.Printf("   Budget: %s\n", skillSuggestBudget)
+	fmt.Printf("   Learning Style: %s\n", style)
+	fmt.Printf("   Budget: %s\n", budget)
 	fmt.Printf("   Provider: %s\n", client.Provider())
 	fmt.Println()
 	fmt.Println("⏳ Finding best resources...")
@@ -495,8 +515,8 @@ func runSkillSuggestResources(cmd *cobra.Command, args []string) error {
 		Skill:         skill,
 		CurrentLevel:  currentLevel,
 		TargetLevel:   targetLevel,
-		LearningStyle: skillSuggestStyle,
-		Budget:        skillSuggestBudget,
+		LearningStyle: style,
+		Budget:        budget,
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)

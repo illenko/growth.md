@@ -118,26 +118,27 @@ func promptForConfig() (*storage.Config, error) {
 	email, _ := reader.ReadString('\n')
 	config.User.Email = strings.TrimSpace(email)
 
-	fmt.Print("\nAI Provider (openai/anthropic/google/local) [openai]: ")
+	fmt.Print("\nAI Provider (gemini/openai/anthropic/local) [gemini]: ")
 	provider, _ := reader.ReadString('\n')
 	provider = strings.TrimSpace(provider)
 	if provider != "" {
 		config.AI.Provider = provider
 	}
 
-	if config.AI.Provider == "openai" {
+	if config.AI.Provider == "gemini" {
+		config.AI.Model = "gemini-3-flash-preview"
+	} else if config.AI.Provider == "openai" {
 		config.AI.Model = "gpt-4"
 	} else if config.AI.Provider == "anthropic" {
 		config.AI.Model = "claude-3-5-sonnet-20241022"
-	} else if config.AI.Provider == "google" {
-		config.AI.Model = "gemini-3-flash-preview"
 	}
 
-	fmt.Print("\nEnable auto-commit to Git? (y/n) [y]: ")
+	fmt.Print("\nEnable auto-commit to Git? (y/n) [n]: ")
 	autoCommit, _ := reader.ReadString('\n')
 	autoCommit = strings.TrimSpace(strings.ToLower(autoCommit))
-	if autoCommit == "n" || autoCommit == "no" {
-		config.Git.AutoCommit = false
+	if autoCommit == "y" || autoCommit == "yes" {
+		config.Git.AutoCommit = true
+		config.Git.CommitOnUpdate = true
 	}
 
 	return config, nil
