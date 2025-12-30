@@ -8,7 +8,6 @@ import (
 	"github.com/illenko/growth.md/internal/core"
 )
 
-// PathGenerationOutput matches the JSON schema from the prompt
 type PathGenerationOutput struct {
 	Path      PathOutput    `json:"path"`
 	Phases    []PhaseOutput `json:"phases"`
@@ -53,13 +52,11 @@ type ResourceOutput struct {
 	Cost           string  `json:"cost,omitempty"`
 }
 
-// ResourceSuggestionOutput matches the resource suggestion JSON schema
 type ResourceSuggestionOutput struct {
 	Resources []ResourceOutput `json:"resources"`
 	Reasoning string           `json:"reasoning"`
 }
 
-// ProgressAnalysisOutput matches the progress analysis JSON schema
 type ProgressAnalysisOutput struct {
 	Summary         string   `json:"summary"`
 	Insights        []string `json:"insights"`
@@ -68,7 +65,45 @@ type ProgressAnalysisOutput struct {
 	SuggestedFocus  []string `json:"suggested_focus"`
 }
 
-// ParsePathGeneration converts AI response to domain types
+func createResource(resourceOut ResourceOutput, resourceID, skillID core.EntityID) *core.Resource {
+	resourceType := core.ResourceType(resourceOut.Type)
+	if !resourceType.IsValid() {
+		resourceType = core.ResourceCourse
+	}
+
+	return &core.Resource{
+		ID:             resourceID,
+		Title:          resourceOut.Title,
+		Type:           resourceType,
+		SkillID:        skillID,
+		Body:           resourceOut.Description,
+		Author:         resourceOut.Author,
+		URL:            resourceOut.URL,
+		EstimatedHours: resourceOut.EstimatedHours,
+		Status:         core.ResourceNotStarted,
+		Tags:           []string{},
+		Timestamps:     core.NewTimestamps(),
+	}
+}
+
+func createMilestone(milestoneOut MilestoneOutput, milestoneID, pathID core.EntityID) *core.Milestone {
+	milestoneType := core.MilestoneType(milestoneOut.Type)
+	if !milestoneType.IsValid() {
+		milestoneType = core.MilestonePathLevel
+	}
+
+	return &core.Milestone{
+		ID:            milestoneID,
+		Title:         milestoneOut.Title,
+		Body:          milestoneOut.Description,
+		Type:          milestoneType,
+		ReferenceType: core.ReferencePath,
+		ReferenceID:   pathID,
+		Status:        core.StatusActive,
+		Timestamps:    core.NewTimestamps(),
+	}
+}
+
 func ParsePathGeneration(responseText string, pathID, goalID core.EntityID) (*ai.PathGenerationResponse, error) {
 	var output PathGenerationOutput
 
@@ -80,7 +115,6 @@ func ParsePathGeneration(responseText string, pathID, goalID core.EntityID) (*ai
 		}
 	}
 
-	// Validate required fields
 	if output.Path.Title == "" {
 		return nil, &ai.ParseError{
 			Provider: "gemini",
@@ -88,7 +122,6 @@ func ParsePathGeneration(responseText string, pathID, goalID core.EntityID) (*ai
 		}
 	}
 
-	// Convert path
 	path := &core.LearningPath{
 		ID:          pathID,
 		Title:       output.Path.Title,
@@ -101,7 +134,6 @@ func ParsePathGeneration(responseText string, pathID, goalID core.EntityID) (*ai
 		Timestamps:  core.NewTimestamps(),
 	}
 
-	// Convert phases
 	phases := make([]*core.Phase, 0, len(output.Phases))
 	resources := make([]*core.Resource, 0)
 	milestones := make([]*core.Milestone, 0)
@@ -121,7 +153,6 @@ func ParsePathGeneration(responseText string, pathID, goalID core.EntityID) (*ai
 			Timestamps:        core.NewTimestamps(),
 		}
 
-		// Add skill requirements
 		for _, skillReq := range phaseOut.SkillRequirements {
 			level := core.ProficiencyLevel(skillReq.RequiredLevel)
 			if level.IsValid() {
@@ -132,53 +163,16 @@ func ParsePathGeneration(responseText string, pathID, goalID core.EntityID) (*ai
 			}
 		}
 
-		// Convert phase milestones
 		for j, milestoneOut := range phaseOut.Milestones {
 			milestoneID := core.EntityID(fmt.Sprintf("milestone-%03d", len(milestones)+j+1))
-
-			milestoneType := core.MilestoneType(milestoneOut.Type)
-			if !milestoneType.IsValid() {
-				milestoneType = core.MilestonePathLevel // Default
-			}
-
-			milestone := &core.Milestone{
-				ID:            milestoneID,
-				Title:         milestoneOut.Title,
-				Body:          milestoneOut.Description,
-				Type:          milestoneType,
-				ReferenceType: core.ReferencePath,
-				ReferenceID:   pathID,
-				Status:        core.StatusActive,
-				Timestamps:    core.NewTimestamps(),
-			}
-
+			milestone := createMilestone(milestoneOut, milestoneID, pathID)
 			milestones = append(milestones, milestone)
 			phase.Milestones = append(phase.Milestones, milestoneID)
 		}
 
-		// Convert phase resources
 		for k, resourceOut := range phaseOut.Resources {
 			resourceID := core.EntityID(fmt.Sprintf("resource-%03d", len(resources)+k+1))
-
-			resourceType := core.ResourceType(resourceOut.Type)
-			if !resourceType.IsValid() {
-				resourceType = core.ResourceCourse // Default
-			}
-
-			resource := &core.Resource{
-				ID:             resourceID,
-				Title:          resourceOut.Title,
-				Type:           resourceType,
-				SkillID:        "", // Will be linked later
-				Body:           resourceOut.Description,
-				Author:         resourceOut.Author,
-				URL:            resourceOut.URL,
-				EstimatedHours: resourceOut.EstimatedHours,
-				Status:         core.ResourceNotStarted,
-				Tags:           []string{},
-				Timestamps:     core.NewTimestamps(),
-			}
-
+			resource := createResource(resourceOut, resourceID, "")
 			resources = append(resources, resource)
 		}
 
@@ -195,7 +189,6 @@ func ParsePathGeneration(responseText string, pathID, goalID core.EntityID) (*ai
 	}, nil
 }
 
-// ParseResourceSuggestion converts AI response to resource suggestions
 func ParseResourceSuggestion(responseText string, skillID core.EntityID) (*ai.ResourceSuggestionResponse, error) {
 	var output ResourceSuggestionOutput
 
@@ -211,26 +204,7 @@ func ParseResourceSuggestion(responseText string, skillID core.EntityID) (*ai.Re
 
 	for i, resourceOut := range output.Resources {
 		resourceID := core.EntityID(fmt.Sprintf("resource-%03d", i+1))
-
-		resourceType := core.ResourceType(resourceOut.Type)
-		if !resourceType.IsValid() {
-			resourceType = core.ResourceCourse // Default
-		}
-
-		resource := &core.Resource{
-			ID:             resourceID,
-			Title:          resourceOut.Title,
-			Type:           resourceType,
-			SkillID:        skillID,
-			Body:           resourceOut.Description,
-			Author:         resourceOut.Author,
-			URL:            resourceOut.URL,
-			EstimatedHours: resourceOut.EstimatedHours,
-			Status:         core.ResourceNotStarted,
-			Tags:           []string{},
-			Timestamps:     core.NewTimestamps(),
-		}
-
+		resource := createResource(resourceOut, resourceID, skillID)
 		resources = append(resources, resource)
 	}
 
@@ -240,7 +214,6 @@ func ParseResourceSuggestion(responseText string, skillID core.EntityID) (*ai.Re
 	}, nil
 }
 
-// ParseProgressAnalysis converts AI response to progress analysis
 func ParseProgressAnalysis(responseText string) (*ai.ProgressAnalysisResponse, error) {
 	var output ProgressAnalysisOutput
 

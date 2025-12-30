@@ -6,7 +6,6 @@ import (
 	"github.com/illenko/growth.md/internal/core"
 )
 
-// PathGenerationRequest contains context for path generation
 type PathGenerationRequest struct {
 	Goal           *core.Goal
 	CurrentSkills  []*core.Skill
@@ -16,7 +15,6 @@ type PathGenerationRequest struct {
 	TargetDate     *time.Time
 }
 
-// PathGenerationResponse contains the generated path structure
 type PathGenerationResponse struct {
 	Path       *core.LearningPath
 	Phases     []*core.Phase
@@ -25,7 +23,6 @@ type PathGenerationResponse struct {
 	Reasoning  string
 }
 
-// ResourceSuggestionRequest for resource recommendations
 type ResourceSuggestionRequest struct {
 	Skill         *core.Skill
 	CurrentLevel  core.ProficiencyLevel
@@ -34,13 +31,11 @@ type ResourceSuggestionRequest struct {
 	Budget        string // e.g., "free", "paid", "any"
 }
 
-// ResourceSuggestionResponse contains recommended resources
 type ResourceSuggestionResponse struct {
 	Resources []*core.Resource
 	Reasoning string
 }
 
-// ProgressAnalysisRequest for analyzing user progress
 type ProgressAnalysisRequest struct {
 	Goal          *core.Goal
 	Path          *core.LearningPath
@@ -48,7 +43,6 @@ type ProgressAnalysisRequest struct {
 	CurrentSkills []*core.Skill
 }
 
-// ProgressAnalysisResponse contains insights and recommendations
 type ProgressAnalysisResponse struct {
 	Summary         string
 	Insights        []string

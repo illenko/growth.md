@@ -6,7 +6,6 @@ import (
 	"github.com/illenko/growth.md/internal/core"
 )
 
-// MockClient is a mock AI client for testing
 type MockClient struct {
 	GenerateLearningPathFunc func(ctx context.Context, req PathGenerationRequest) (*PathGenerationResponse, error)
 	SuggestResourcesFunc     func(ctx context.Context, req ResourceSuggestionRequest) (*ResourceSuggestionResponse, error)
@@ -14,13 +13,11 @@ type MockClient struct {
 	ProviderName             string
 }
 
-// GenerateLearningPath calls the mock function or returns a default response
 func (m *MockClient) GenerateLearningPath(ctx context.Context, req PathGenerationRequest) (*PathGenerationResponse, error) {
 	if m.GenerateLearningPathFunc != nil {
 		return m.GenerateLearningPathFunc(ctx, req)
 	}
 
-	// Return default mock response
 	return &PathGenerationResponse{
 		Path: &core.LearningPath{
 			ID:     "path-001",
@@ -36,13 +33,11 @@ func (m *MockClient) GenerateLearningPath(ctx context.Context, req PathGeneratio
 	}, nil
 }
 
-// SuggestResources calls the mock function or returns a default response
 func (m *MockClient) SuggestResources(ctx context.Context, req ResourceSuggestionRequest) (*ResourceSuggestionResponse, error) {
 	if m.SuggestResourcesFunc != nil {
 		return m.SuggestResourcesFunc(ctx, req)
 	}
 
-	// Return default mock response
 	return &ResourceSuggestionResponse{
 		Resources: []*core.Resource{
 			{
@@ -58,13 +53,11 @@ func (m *MockClient) SuggestResources(ctx context.Context, req ResourceSuggestio
 	}, nil
 }
 
-// AnalyzeProgress calls the mock function or returns a default response
 func (m *MockClient) AnalyzeProgress(ctx context.Context, req ProgressAnalysisRequest) (*ProgressAnalysisResponse, error) {
 	if m.AnalyzeProgressFunc != nil {
 		return m.AnalyzeProgressFunc(ctx, req)
 	}
 
-	// Return default mock response
 	return &ProgressAnalysisResponse{
 		Summary:         "Mock progress summary",
 		Insights:        []string{"Mock insight 1", "Mock insight 2"},
@@ -74,7 +67,6 @@ func (m *MockClient) AnalyzeProgress(ctx context.Context, req ProgressAnalysisRe
 	}, nil
 }
 
-// Provider returns the provider name
 func (m *MockClient) Provider() string {
 	if m.ProviderName != "" {
 		return m.ProviderName
@@ -82,7 +74,6 @@ func (m *MockClient) Provider() string {
 	return "mock"
 }
 
-// NewMockClient creates a new mock client
 func NewMockClient() *MockClient {
 	return &MockClient{
 		ProviderName: "mock",

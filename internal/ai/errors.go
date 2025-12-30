@@ -5,7 +5,6 @@ import (
 	"fmt"
 )
 
-// Common AI errors
 var (
 	ErrAPIKeyMissing        = errors.New("API key is missing")
 	ErrRateLimitExceeded    = errors.New("rate limit exceeded")
@@ -14,7 +13,6 @@ var (
 	ErrTimeout              = errors.New("request timeout")
 )
 
-// APIError represents an error from the AI provider API
 type APIError struct {
 	Provider   string
 	StatusCode int
@@ -33,7 +31,6 @@ func (e *APIError) Unwrap() error {
 	return e.Err
 }
 
-// ParseError represents an error parsing AI response
 type ParseError struct {
 	Provider string
 	Message  string

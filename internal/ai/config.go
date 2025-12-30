@@ -15,13 +15,11 @@ type Config struct {
 	BaseURL     string  // For custom endpoints (optional)
 }
 
-// Validate checks if the config is valid
 func (c *Config) Validate() error {
 	if c.Provider == "" {
 		return fmt.Errorf("provider is required")
 	}
 
-	// Check for API key (env var or config)
 	if c.APIKey == "" {
 		c.APIKey = c.loadAPIKeyFromEnv()
 	}
@@ -30,7 +28,6 @@ func (c *Config) Validate() error {
 		return fmt.Errorf("API key is required for provider %s (set in config or use env var)", c.Provider)
 	}
 
-	// Set defaults
 	if c.Temperature == 0 {
 		c.Temperature = 0.7
 	}
@@ -42,7 +39,6 @@ func (c *Config) Validate() error {
 	return nil
 }
 
-// loadAPIKeyFromEnv loads the API key from environment variables
 func (c *Config) loadAPIKeyFromEnv() string {
 	switch c.Provider {
 	case "gemini":
@@ -56,7 +52,6 @@ func (c *Config) loadAPIKeyFromEnv() string {
 	}
 }
 
-// DefaultConfig returns a default configuration for Gemini
 func DefaultConfig() Config {
 	return Config{
 		Provider:    "gemini",
